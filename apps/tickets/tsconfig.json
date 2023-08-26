@@ -3,7 +3,7 @@
     "allowJs": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "node"]
   },
   "files": [],
   "include": [],
