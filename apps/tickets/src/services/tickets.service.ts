@@ -19,9 +19,10 @@ export interface TicketDetails {
   status?: number;
 }
 
-export const getTickets = async () => (await get('tickets/ajax')).json() as Promise<TicketResponse>;
+export const getTickets = async () => (await get('ajax')).json() as Promise<TicketResponse>;
 
-export const createTicket = async () => await post('https://infosys-test.fastaval.dk/tickets/ajax');
+export const getTicket = async (ticketId) => (await get(`ajax?id=${ticketId}`)).json() as Promise<TicketResponse>;
 
-export const updateTicket = async (ticketDetails: TicketDetails) =>
-  await post('https://infosys-test.fastaval.dk/tickets/ajax', ticketDetails);
+export const createTicket = async () => await post('ajax');
+
+export const updateTicket = async (ticketDetails: TicketDetails) => await post('ajax', ticketDetails);

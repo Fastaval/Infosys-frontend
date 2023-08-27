@@ -1,6 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
+  <h3>Opgaver til tilmelding og infosys</h3>
   <RouterView />
 </template>
 

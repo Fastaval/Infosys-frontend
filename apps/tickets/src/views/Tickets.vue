@@ -12,8 +12,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <h3>Opgaver til tilmelding og infosys</h3>
-  <table>
+  <table class="table table-striped table-hover mt-4">
     <thead>
       <th>ID</th>
       <th>Kategori</th>
@@ -23,22 +22,23 @@ onBeforeMount(async () => {
       <th>Udføres af</th>
       <th>Status</th>
     </thead>
-    <tr v-for="ticket in tickets" :key="ticket.id" onclick="window.location='/tickets/show/1'">
-      <td>{{ ticket.id }}</td>
-      <td>{{ ticket.category }}</td>
-      <td>{{ ticket.name }}</td>
-      <td>{{ ticket.priority }}</td>
-      <td>{{ ticket.creator }}</td>
-      <td>{{ ticket.assignee }}</td>
-      <td>{{ ticket.status }}</td>
-    </tr>
+    <tbody>
+      <tr v-for="ticket in tickets" :key="ticket.id" @click="$router.push({ path: `/${ticket.id}` })">
+        <td>{{ ticket.id }}</td>
+        <td>{{ ticket.category }}</td>
+        <td>{{ ticket.name }}</td>
+        <td>{{ ticket.priority }}</td>
+        <td>{{ ticket.creator }}</td>
+        <td>{{ ticket.assignee }}</td>
+        <td>{{ ticket.status }}</td>
+      </tr>
+    </tbody>
   </table>
 </template>
 
 <style scoped>
-table th,
-table td {
-  padding: 0 1em;
-  border: 1px solid black;
+.table-hover tbody tr:hover > td {
+  cursor: pointer;
+  background-color: lightblue;
 }
 </style>

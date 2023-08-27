@@ -5,7 +5,11 @@ import './styles.scss';
 
 if (import.meta.env.DEV) {
   const { worker } = await import('./mocks/index');
-  worker.start();
+  worker.start({
+    onUnhandledRequest(req) {
+      console.info(`Unhandled ${req.method} request to ${req.url.href} `);
+    }
+  });
 }
 
 const app = createApp(App);

@@ -1,4 +1,4 @@
 import { rest, setupWorker } from 'msw';
-import { mockTickets } from './resolvers/mockTickets';
+import { mockGetTickets, mockPostTickets } from './resolvers/Tickets';
 
-export const worker = setupWorker(rest.get('/tickets/ajax', mockTickets));
+export const worker = setupWorker(rest.get('/ajax', mockGetTickets), rest.post('/ajax', mockPostTickets));
