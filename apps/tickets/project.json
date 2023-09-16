@@ -12,12 +12,8 @@
         "outputPath": "dist/apps/tickets"
       },
       "configurations": {
-        "development": {
-          "mode": "development"
-        },
-        "production": {
-          "mode": "production"
-        }
+        "development": { "mode": "development" },
+        "production": { "mode": "production" }
       }
     },
     "serve": {
@@ -27,14 +23,8 @@
         "buildTarget": "tickets:build"
       },
       "configurations": {
-        "development": {
-          "buildTarget": "tickets:build:development",
-          "hmr": true
-        },
-        "production": {
-          "buildTarget": "tickets:build:production",
-          "hmr": false
-        }
+        "development": { "buildTarget": "tickets:build:development", "hmr": true },
+        "production": { "buildTarget": "tickets:build:production", "hmr": false }
       }
     },
     "preview": {
@@ -44,12 +34,8 @@
         "buildTarget": "tickets:build"
       },
       "configurations": {
-        "development": {
-          "buildTarget": "tickets:build:development"
-        },
-        "production": {
-          "buildTarget": "tickets:build:production"
-        }
+        "development": { "buildTarget": "tickets:build:development" },
+        "production": { "buildTarget": "tickets:build:production" }
       }
     },
     "lint": {

@@ -2,7 +2,7 @@ export const mockGetTicketMessages = (req, res, ctx) => {
   return res(
     ctx.json({
       status: 'success',
-      messages: mockedTicketMessages
+      messages: mockedTicketMessages.filter((message) => message.ticket == req.params.id)
     })
   );
 };

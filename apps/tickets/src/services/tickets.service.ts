@@ -33,13 +33,14 @@ export interface MessageDetails {
   user: number;
 }
 
-export const getTickets = async () => (await get('ajax')).json() as Promise<TicketResponse>;
+export const getTickets = async () => (await get('/tickets/ajax')).json() as Promise<TicketResponse>;
 
-export const getTicket = async (ticketId) => (await get(`ajax?id=${ticketId}`)).json() as Promise<TicketResponse>;
+export const createTicket = async () => await post('/tickets/ajax');
+
+export const updateTicket = async (ticketDetails: TicketDetails) => await post('/tickets/ajax', ticketDetails);
+
+export const getTicket = async (ticketId) =>
+  (await get(`/tickets/ajax?id=${ticketId}`)).json() as Promise<TicketResponse>;
 
 export const getTicketMessages = async (ticketId) =>
-  (await get(`${ticketId}/messages`)).json() as Promise<TicketMessagesResponse>;
-
-export const createTicket = async () => await post('ajax');
-
-export const updateTicket = async (ticketDetails: TicketDetails) => await post('ajax', ticketDetails);
+  (await get(`/tickets/${ticketId}/messages`)).json() as Promise<TicketMessagesResponse>;
