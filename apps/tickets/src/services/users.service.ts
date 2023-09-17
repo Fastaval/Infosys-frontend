@@ -15,8 +15,7 @@ export interface UserDetails {
   name: string;
 }
 
-export const populateUsers = async () =>
-  (await get('/admin/ajax/users/*')).json().then((result) => (users = result.users));
+export const populateUsers = async () => await get('/admin/ajax/users/*').then((resp) => (users = resp.users));
 
 export const getUserList = async () => {
   if (users.length === 0) await populateUsers();

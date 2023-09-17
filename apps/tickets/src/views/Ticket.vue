@@ -14,19 +14,14 @@ const tr = ref();
 onBeforeMount(async () => {
   await getTranslations().then((result) => (tr.value = result));
   await getUserList().then((result) => (users.value = result));
-  getTicket(route.params.id).then((response) => {
-    const id = route.params.id as string;
-    ticket.value = response.tickets[id];
-  });
-  getTicketMessages(route.params.id).then((response) => {
-    messages.value = response.messages;
-  });
+  await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id as string]));
+  await getTicketMessages(route.params.id).then((response) => (messages.value = response.messages));
 });
 </script>
 
 <template>
   <RouterLink to="/">&larr; Tilbage til ticket listen</RouterLink>
-  <div class="card shadow-sm mt-3" v-if="users && ticket">
+  <div class="card shadow mt-3" v-if="users && ticket">
     <div class="card-body d-flex">
       <div class="ticket-body w-100">
         <div class="d-flex align-items-center pb-2">
@@ -42,7 +37,7 @@ onBeforeMount(async () => {
         </div>
         <p>{{ ticket?.description ?? 'Ingen beskrivelse' }}</p>
         <div>
-          <div class="card p-2 mt-3" v-for="message of messages.slice().reverse()" :key="message.id">
+          <div class="card shadow-sm p-2 mt-3" v-for="message of messages?.slice().reverse()" :key="message.id">
             <span style="color: #ccc"
               >Oprettet: {{ new Date(message.posted * 1000).toLocaleString() }} | {{ users[message.user]?.name }}</span
             >

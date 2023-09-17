@@ -9,5 +9,5 @@ export const worker = setupWorker(
   rest.get('/tickets/:id/messages', mockGetTicketMessages),
   rest.post('/tickets/ajax', mockPostTickets),
   rest.get('/admin/ajax/users/*', mockGetUsers),
-  rest.get('/translations/ajax/tickets.*?lang=da', mockGetTranslations)
+  rest.get('/translations/ajax/tickets.*', mockGetTranslations)
 );

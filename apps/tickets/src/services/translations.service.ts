@@ -8,7 +8,9 @@ export interface TranslationResponse {
 }
 
 export const populateTranslations = async () =>
-  (await get('/translations/ajax/tickets.*?lang=da')).json().then((result) => (translations = result.translations));
+  await get('/translations/ajax/tickets.*?lang=da').then((resp) => {
+    translations = resp?.translations;
+  });
 
 export const getTranslations = async () => {
   if (!translations || Object.keys(translations).length === 0) await populateTranslations();
