@@ -9,6 +9,7 @@ const filteredTickets = ref();
 const users = ref();
 const tr = ref();
 const open = ref(false);
+const onlyShowOpen = ref(false);
 const searchFilter = ref('');
 const ticketName = ref('');
 const ticketDescription = ref('');
@@ -25,9 +26,13 @@ const getTickets = async () => {
 
 const filterTickets = () => {
   filteredTickets.value = Object.values(tickets.value).filter(
-    (ticket) => ticket.name.toLowerCase().includes(searchFilter.value.toLowerCase()) ?? true
+    (ticket) => ticketNameIncludes(ticket) && ticketStatusOpen(ticket)
   );
 };
+
+const ticketNameIncludes = (ticket) => ticket.name.toLowerCase().includes(searchFilter.value.toLowerCase()) ?? true;
+
+const ticketStatusOpen = (ticket) => (onlyShowOpen.value ? ticket.open === 1 : true);
 
 const openTicketModal = () => {
   ticketName.value = '';
@@ -65,15 +70,28 @@ onBeforeMount(async () => {
       <input id="search" v-model.trim="searchFilter" @keyup="filterTickets()" />
     </div>
   </div>
+  <div class="mt-3">
+    <div class="form-check form-switch">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        role="switch"
+        id="showOnlyOpen"
+        v-model="onlyShowOpen"
+        @change="filterTickets()"
+      />
+      <label class="form-check-label" for="showOnlyOpen">Vis kun åbne</label>
+    </div>
+  </div>
 
   <table class="table shadow table-striped table-hover mt-3" v-if="filteredTickets">
     <thead style="background-color: var(--bs-orange)">
       <th>ID</th>
       <th>Kategori</th>
-      <th>Opgave</th>
+      <th>Navn</th>
       <th>Prioritet</th>
-      <th>Oprettet af</th>
-      <th>Udføres af</th>
+      <th>Opretter</th>
+      <th>Udfører</th>
       <th>Status</th>
     </thead>
     <tbody>
@@ -279,5 +297,10 @@ onBeforeMount(async () => {
   border: 0;
   align-items: center;
   justify-content: center;
+}
+
+.form-check-input {
+  border: 1px solid gray;
+  margin-top: 5px;
 }
 </style>
