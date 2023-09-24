@@ -10,6 +10,7 @@ const users = ref();
 const tr = ref();
 const open = ref(false);
 const onlyShowOpen = ref(false);
+const onlyShowMine = ref(false);
 const searchFilter = ref('');
 const ticketName = ref('');
 const ticketDescription = ref('');
@@ -26,13 +27,15 @@ const getTickets = async () => {
 
 const filterTickets = () => {
   filteredTickets.value = Object.values(tickets.value).filter(
-    (ticket) => ticketNameIncludes(ticket) && ticketStatusOpen(ticket)
+    (ticket) => ticketNameIncludes(ticket) && ticketStatusOpen(ticket) && ticketOnlyMine(ticket)
   );
 };
 
 const ticketNameIncludes = (ticket) => ticket.name.toLowerCase().includes(searchFilter.value.toLowerCase()) ?? true;
 
 const ticketStatusOpen = (ticket) => (onlyShowOpen.value ? ticket.open === 1 : true);
+
+const ticketOnlyMine = (ticket) => (onlyShowMine.value ? ticket.assignee === window.infosys?.user_id : true);
 
 const openTicketModal = () => {
   ticketName.value = '';
@@ -70,7 +73,7 @@ onBeforeMount(async () => {
       <input id="search" v-model.trim="searchFilter" @keyup="filterTickets()" />
     </div>
   </div>
-  <div class="mt-3">
+  <div class="mt-3 d-inline-flex gap-3">
     <div class="form-check form-switch">
       <input
         class="form-check-input"
@@ -80,7 +83,18 @@ onBeforeMount(async () => {
         v-model="onlyShowOpen"
         @change="filterTickets()"
       />
-      <label class="form-check-label" for="showOnlyOpen">Vis kun åbne</label>
+      <label class="form-check-label" for="showOnlyOpen">Åbne opgaver</label>
+    </div>
+    <div class="form-check form-switch">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        role="switch"
+        id="showOnlyMine"
+        v-model="onlyShowMine"
+        @change="filterTickets()"
+      />
+      <label class="form-check-label" for="showOnlyMine">Mine opgaver</label>
     </div>
   </div>
 
