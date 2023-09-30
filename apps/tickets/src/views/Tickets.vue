@@ -1,9 +1,11 @@
 <script setup>
 import { onBeforeMount, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { createTicket, fetchTickets } from '../services/tickets.service';
 import { getTranslations } from '../services/translations.service';
 import { getUserList } from '../services/users.service';
 
+const router = useRouter();
 const tickets = ref();
 const filteredTickets = ref();
 const users = ref();
@@ -20,13 +22,23 @@ const ticketAssignee = ref('');
 
 const getTickets = async () => {
   await fetchTickets().then((response) => {
-    tickets.value = response.tickets;
+    tickets.value = Object.values(response.tickets).map((ticket) => {
+      ticket.category = tr.value.tickets.category[ticket.category].da;
+      ticket.priority = tr.value.tickets.priority[ticket.priority].da;
+      ticket.creator = users.value.find((user) => user.id === ticket.creator).name;
+      ticket.assignee = users.value.find((user) => user.id === ticket.assignee).name;
+      ticket.status =
+        ticket.open === 1
+          ? tr.value.tickets.status.open[ticket.status].da
+          : tr.value.tickets.status.closed[ticket.status].da;
+      return ticket;
+    });
     filterTickets();
   });
 };
 
 const filterTickets = () => {
-  filteredTickets.value = Object.values(tickets.value).filter(
+  filteredTickets.value = tickets.value.filter(
     (ticket) => ticketNameIncludes(ticket) && ticketStatusOpen(ticket) && ticketOnlyMine(ticket)
   );
 };
@@ -58,263 +70,157 @@ const createNewTicket = async () => {
 
 const formIsInvalid = () => !ticketName.value || !ticketDescription.value || !ticketAssignee.value;
 
+const onRowClick = (event) => {
+  const id = event.data.id;
+  router.push({ path: `tickets/show/${id}` });
+};
+
 onBeforeMount(async () => {
   tr.value = await getTranslations();
-  users.value = await getUserList();
+  users.value = Object.values(await getUserList());
   await getTickets();
 });
 </script>
 
 <template>
   <div>
-    <button type="button" class="button action" @click="openTicketModal()">Opret opgave</button>
-    <div class="search-field float-right d-flex gap-2 align-items-center">
-      <label for="search">Søg i opgaver:</label>
-      <input id="search" v-model.trim="searchFilter" @keyup="filterTickets()" />
-    </div>
+    <Button
+      style="gap: 0.5rem"
+      icon="pi pi-plus"
+      size="small"
+      severity="success"
+      raised
+      @click="openTicketModal()"
+      label="Opret opgave"
+    />
   </div>
-  <div class="mt-3 d-inline-flex gap-3">
-    <div class="form-check form-switch">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        role="switch"
-        id="showOnlyOpen"
-        v-model="onlyShowOpen"
-        @change="filterTickets()"
-      />
-      <label class="form-check-label" for="showOnlyOpen">Åbne opgaver</label>
-    </div>
-    <div class="form-check form-switch">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        role="switch"
-        id="showOnlyMine"
-        v-model="onlyShowMine"
-        @change="filterTickets()"
-      />
-      <label class="form-check-label" for="showOnlyMine">Mine opgaver</label>
-    </div>
-  </div>
-
-  <table class="table shadow table-striped table-hover mt-3" v-if="filteredTickets">
-    <thead style="background-color: var(--bs-orange)">
-      <th>ID</th>
-      <th>Kategori</th>
-      <th>Navn</th>
-      <th>Prioritet</th>
-      <th>Opretter</th>
-      <th>Udfører</th>
-      <th>Status</th>
-    </thead>
-    <tbody>
-      <tr
-        v-for="ticket in filteredTickets"
-        :key="ticket.id"
-        @click="$router.push({ path: `tickets/show/${ticket.id}` })"
-      >
-        <td>{{ ticket.id }}</td>
-        <td>{{ tr?.tickets?.category[ticket.category]?.da }}</td>
-        <td>{{ ticket.name }}</td>
-        <td>{{ tr?.tickets?.priority[ticket.priority]?.da }}</td>
-        <td>{{ users[ticket.creator]?.name }}</td>
-        <td>{{ users[ticket.assignee]?.name }}</td>
-        <td>
-          {{
-            ticket.open === 1
-              ? tr?.tickets?.status?.open[ticket.status]?.da
-              : tr?.tickets?.status?.closed[ticket.status]?.da
-          }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <Transition>
-    <dialog v-if="open" class="newTicket">
-      <div class="card w-75">
-        <div class="card-body">
-          <h5 class="card-title d-flex justify-content-between align-items-center">
-            Opret opgave
-            <div @click="open = false" class="closer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16">
-                <path
-                  d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"
-                />
-              </svg>
-            </div>
-          </h5>
-          <div class="card-text py-3">
-            <form class="d-flex flex-column gap-3">
-              <div class="form-floating input-sm">
-                <input v-model.trim="ticketName" class="form-control" id="name" placeholder="Navn/Titel" required />
-                <label for="name">Navn/Titel</label>
-              </div>
-              <div class="d-flex gap-5 justify-content-between">
-                <div class="form-floating w-50">
-                  <select class="form-select" id="category" v-model="ticketCategory" required>
-                    <option v-for="(cat, index) in tr?.tickets?.category" :key="index" v-bind:value="index">
-                      {{ cat.da }}
-                    </option>
-                  </select>
-                  <label for="category">Kategori</label>
-                </div>
-                <div class="form-floating w-50">
-                  <select class="form-select" id="priority" v-model="ticketPriority" required>
-                    <option v-for="(priority, index) in tr?.tickets?.priority" :key="index" v-bind:value="index">
-                      {{ priority.da }}
-                    </option>
-                  </select>
-                  <label for="priority">Prioritet</label>
-                </div>
-                <div class="form-floating w-100">
-                  <select class="form-select" id="priority" v-model="ticketAssignee" required>
-                    <option v-for="assignee in users" :key="assignee.id" v-bind:value="assignee.id">
-                      {{ assignee.name }}
-                    </option>
-                  </select>
-                  <label for="priority">Udføres af</label>
-                </div>
-              </div>
-              <div class="form-floating">
-                <textarea
-                  v-model.trim="ticketDescription"
-                  class="form-control"
-                  id="description"
-                  placeholder="Indhold/Beskrivelse"
-                  rows="7"
-                  style="height: 100%"
-                  required
-                ></textarea>
-                <label for="description">Indhold/Beskrivelse</label>
-              </div>
-            </form>
-          </div>
-          <div class="d-flex float-right gap-3">
-            <button class="button cancel" @click="open = false">Luk</button>
-            <button
-              class="button action"
-              @click="createNewTicket()"
-              :class="{ disabled: formIsInvalid() }"
-              :disabled="formIsInvalid()"
-            >
-              Opret opgave
-            </button>
-          </div>
+  <Toolbar>
+    <template #start>
+      <div style="display: inline-flex; gap: 1rem">
+        <div style="display: inline-flex; gap: 0.5rem">
+          <InputSwitch inputId="showOnlyOpen" v-model="onlyShowOpen" @change="filterTickets()" />
+          <label for="showOnlyOpen">Åbne opgaver</label>
+        </div>
+        <div style="display: inline-flex; gap: 0.5rem">
+          <InputSwitch inputId="showOnlyMine" v-model="onlyShowMine" @change="filterTickets()" />
+          <label for="showOnlyMine">Mine opgaver</label>
         </div>
       </div>
-    </dialog>
-  </Transition>
+    </template>
+    <template #end>
+      <span class="p-input-icon-left">
+        <i class="pi pi-search" />
+        <InputText
+          class="search-field"
+          v-model.trim="searchFilter"
+          @keyup="filterTickets()"
+          placeholder="Søg i opgaver"
+        />
+      </span>
+    </template>
+  </Toolbar>
+
+  <DataTable
+    v-if="filteredTickets"
+    :value="filteredTickets"
+    :rows="5"
+    :rowsPerPageOptions="[5, 10, 20, 50, 100]"
+    :rowHover="true"
+    @row-click="onRowClick"
+    paginator
+    stripedRows
+    removableSort
+    size="small"
+  >
+    <Column field="id" header="ID" sortable></Column>
+    <Column field="category" header="Kategori" sortable></Column>
+    <Column field="name" header="Navn" sortable></Column>
+    <Column field="priority" header="Prioritet" sortable></Column>
+    <Column field="creator" header="Opretter" sortable></Column>
+    <Column field="assignee" header="Udfører" sortable></Column>
+    <Column field="status" header="Status" sortable></Column>
+  </DataTable>
+
+  <Dialog v-model:visible="open" modal class="newTicket">
+    <template #header><h4>Opret opgave</h4></template>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+      <div style="display: flex; flex-direction: column">
+        <label class="help-text">Navn/Titel</label>
+        <InputText v-model.trim="ticketName" required />
+
+        <label class="help-text">Opgavebeskrivelse</label>
+        <Textarea v-model.trim="ticketDescription" :autoResize="true" :rows="10" style="width: 100%" required />
+      </div>
+      <div style="display: flex; flex-direction: column">
+        <label class="help-text">Kategori</label>
+        <Dropdown
+          v-model="ticketCategory"
+          :options="tr.tickets.category.map((item, index) => ({ label: item.da, value: index }))"
+          optionLabel="label"
+          optionValue="value"
+        />
+
+        <label class="help-text">Prioritet</label>
+        <Dropdown
+          v-model="ticketPriority"
+          :options="tr.tickets.priority.map((item, index) => ({ label: item.da, value: index }))"
+          optionLabel="label"
+          optionValue="value"
+        />
+
+        <label class="help-text">Udføres af</label>
+        <Dropdown
+          v-model="ticketAssignee"
+          :options="users"
+          :resetFilterOnHide="true"
+          optionLabel="name"
+          optionValue="id"
+          filter
+        />
+      </div>
+    </div>
+
+    <template #footer>
+      <div style="display: inline-flex; gap: 1rem">
+        <Button severity="info" text label="Luk" icon="pi pi-times" @click="open = false" />
+        <Button label="Opret opgave" raised :disabled="formIsInvalid()" @click="createNewTicket()" />
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <style scoped>
-.v-enter-active,
-.v-leave-active {
-  transition: opacity 0.2s ease;
+.p-toolbar {
+  padding: 1rem 0;
 }
 
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
+.p-inputswitch {
+  margin-top: 2px;
+}
+
+.pi {
+  color: #6c757d;
+  font-size: 14px;
+  left: 14px;
+}
+
+.p-inputtext {
+  padding: 10.5px;
+  line-height: normal;
+  border: 1px solid #ced4da;
+  color: #495057;
 }
 
 .search-field {
-  & label {
-    margin-bottom: 0;
-  }
-
-  & input {
-    width: 300px;
-    border: lightgray 1px solid;
-    border-radius: 6px;
-    padding: 4px;
-
-    &:focus-visible {
-      outline: 0;
-    }
-  }
+  padding-left: 35px;
 }
 
-.closer {
-  width: 24px;
-  height: 24x;
-  cursor: pointer;
-  outline: 0;
-  stroke: grey;
-
-  :hover {
-    stroke: black;
-  }
+label {
+  margin-bottom: 0;
 }
 
-.table-hover tbody tr:hover > td {
-  cursor: pointer;
-  background-color: var(--bs-warning-border-subtle);
-}
-
-.button {
-  border-radius: 6px;
-  border: 1px solid var(--bs-btn-bg);
-  padding: 6px 12px;
-  color: white;
-  transition: background-color 0.2s;
-
-  &.action {
-    border: 1px solid #157347;
-    background-color: #198754;
-
-    &:hover {
-      background-color: #157347;
-    }
-
-    &:active {
-      background-color: #198754;
-    }
-  }
-
-  &.disabled {
-    cursor: not-allowed;
-    color: lightgrey;
-    background-color: var(--bs-gray-600);
-    border-color: var(--bs-gray-600);
-    &:hover {
-      background-color: var(--bs-gray-600);
-    }
-
-    &:active {
-      background-color: var(--bs-gray-600);
-    }
-  }
-
-  &.cancel {
-    color: black;
-    background-color: var(--bs-gray-200);
-
-    &:hover {
-      background-color: var(--bs-gray-300);
-    }
-
-    &:active {
-      background-color: var(--bs-gray-200);
-    }
-  }
-}
-
-.newTicket {
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 100%;
-  border: 0;
-  align-items: center;
-  justify-content: center;
-}
-
-.form-check-input {
-  border: 1px solid gray;
-  margin-top: 5px;
+.help-text {
+  font-size: 12px;
+  color: #6c757d;
 }
 </style>

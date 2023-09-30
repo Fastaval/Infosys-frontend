@@ -1,17 +1,20 @@
-@import 'bootstrap';
+//theme
+@import 'primevue/resources/themes/md-light-indigo/theme.css';
+@import 'primeicons/primeicons.css';
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-
-  & :focus {
-    box-shadow: none !important;
-    outline: 0 !important;
-  }
+:root {
+  --primary: #3f51b5;
+  --secondary: #ff4081;
+  --success: #689f38;
+  --info: #2196f3;
+  --warning: #fbc02d;
+  --help: #9c27b0;
+  --danger: #d32f2f;
 }
 
 body {
-  min-height: 100vh;
+  margin: 0;
+  font-family: 'Inter var', sans-serif;
 }
 
 .content-container {
@@ -20,4 +23,41 @@ body {
   padding: 2rem;
 
   font-weight: normal;
+}
+
+th {
+  font-weight: 700;
+  background-color: #f8f9fa;
+}
+
+tbody tr:not(.p-highlight):hover {
+  cursor: pointer;
+  background: var(--warning);
+}
+
+.p-paginator .p-dropdown {
+  height: unset;
+}
+
+.p-dropdown-header {
+  padding: 10.5px;
+
+  .p-dropdown-filter {
+    margin-bottom: 0;
+    padding: 14px;
+  }
+}
+
+.p-dropdown-label {
+  padding: 10.5px;
+  font-size: 14px;
+  line-height: initial;
+}
+
+ul.p-dropdown-items {
+  margin: initial;
+
+  .p-dropdown-item {
+    padding: 10.5px;
+  }
 }

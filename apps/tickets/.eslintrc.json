@@ -10,7 +10,9 @@
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-      "rules": {}
+      "rules": {
+        "vue/multi-word-component-names": 0
+      }
     },
     {
       "files": ["*.ts", "*.tsx"],

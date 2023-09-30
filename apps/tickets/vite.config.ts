@@ -7,9 +7,9 @@ export default defineConfig({
   cacheDir: '../../node_modules/.vite/tickets',
   server: {
     port: 4200,
-    host: 'localhost'
+    host: 'localhost',
+    fs: { strict: false }
   },
-
   preview: {
     port: 4300,
     host: 'localhost'
