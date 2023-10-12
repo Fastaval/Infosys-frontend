@@ -10,7 +10,7 @@ export const mockPostTickets = (req, res, ctx) => {
   if (req.body) {
     return res(ctx.json({ status: 'success', msg: 'body had content' }));
   }
-  return res(ctx.json({ msg: 'body had NO content' }));
+  return res(ctx.json({ status: 'success', msg: 'body had NO content' }));
 };
 
 const mockedTickets = {

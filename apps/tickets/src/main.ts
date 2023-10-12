@@ -18,6 +18,7 @@ import './styles.scss';
 
 if (import.meta.env.DEV) {
   const { worker } = await import('./mocks/index');
+  (window as any).infosys = { user_id: 241 }; // to simulate what properties are available on Infosys
   worker.start({
     onUnhandledRequest(req) {
       console.info(`Unhandled ${req.method} request to ${req.url.href} `);
@@ -43,6 +44,3 @@ app.use(router);
 app.use(PrimeVue, { ripple: true });
 
 app.mount('.content-container');
-
-// Use for debugging logged in user
-// window?.infosys = { user_id: 241 };
