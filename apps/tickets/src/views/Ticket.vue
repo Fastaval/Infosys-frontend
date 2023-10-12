@@ -11,6 +11,16 @@ const messages: Ref<MessageDetails[]> = ref();
 const users = ref();
 const tr = ref();
 
+const getTicketLabel = () => {
+  const open = ticket?.value.open === 1 ? tr.value.tickets?.open?.da : tr.value.tickets?.closed?.da;
+  const status =
+    ticket.value.open === 1
+      ? tr.value.tickets?.status?.open[ticket.value.status]?.da
+      : tr.value.tickets?.status?.closed[ticket.value.status]?.da;
+
+  return `${open} - ${status}`;
+};
+
 onBeforeMount(async () => {
   await getTranslations().then((result) => (tr.value = result));
   await getUserList().then((result) => (users.value = result));
@@ -21,47 +31,57 @@ onBeforeMount(async () => {
 
 <template>
   <RouterLink to="/">&larr; Tilbage til ticket listen</RouterLink>
-  <div class="card shadow mt-3" v-if="users && ticket">
-    <div class="card-body d-flex">
-      <div class="ticket-body w-100">
-        <div class="d-flex align-items-center pb-2">
-          <span class="badge" :class="{ 'text-bg-success': ticket.open === 1, 'text-bg-secondary': ticket.open === 0 }">
-            {{ ticket?.open === 1 ? tr?.tickets?.open?.da : tr?.tickets?.closed?.da }} -
-            {{
-              ticket?.open === 1
-                ? tr?.tickets?.status?.open[ticket?.status]?.da
-                : tr?.tickets?.status?.closed[ticket?.status]?.da
-            }}
-          </span>
-          <h5 class="ps-3 mb-1">{{ ticket?.name }}</h5>
-        </div>
-        <p>{{ ticket?.description ?? 'Ingen beskrivelse' }}</p>
-        <div>
-          <div class="card shadow-sm p-2 mt-3" v-for="message of messages?.slice().reverse()" :key="message.id">
-            <span style="color: #ccc"
-              >Oprettet: {{ new Date(message.posted * 1000).toLocaleString() }} | {{ users[message.user]?.name }}</span
-            >
-            <span>{{ message?.message }}</span>
-          </div>
+  <Card class="card shadow mt-3" v-if="users && ticket">
+    <template #title>
+      {{ ticket?.name }}
+      <Chip class="chip" :label="getTicketLabel()" />
+    </template>
+    <template #content>
+      <div style="display: inline-flex">
+        <div>{{ ticket?.description ?? 'Ingen beskrivelse' }}</div>
+        <div class="ticket-actions">
+          <span>Oprettet:</span>
+          <span>{{ ticket.created ? new Date(ticket.created * 1000).toLocaleString() : 'Ukendt' }}</span>
+          <span>Ændret:</span>
+          <span>{{ ticket.last_edit ? new Date(ticket.last_edit * 1000).toLocaleString() : '-' }} </span>
+          <span>Prioritet:</span>
+          <span>{{ tr?.tickets?.priority[ticket.priority].da ?? 'Ukendt' }}</span>
+          <span>Oprettet af:</span>
+          <span>{{ users[ticket.creator]?.name ?? 'Ukendt' }}</span>
+          <span>Udføres af:</span>
+          <span>{{ users[ticket.assignee]?.name ?? 'Ukendt' }}</span>
         </div>
       </div>
-      <div class="ticket-actions">
-        <span>Oprettet:</span>
-        <span>{{ ticket.created ? new Date(ticket.created * 1000).toLocaleString() : 'Ukendt' }}</span>
-        <span>Ændret:</span>
-        <span>{{ ticket.last_edit ? new Date(ticket.last_edit * 1000).toLocaleString() : '-' }} </span>
-        <span>Prioritet:</span>
-        <span>{{ tr?.tickets?.priority[ticket.priority].da ?? 'Ukendt' }}</span>
-        <span>Oprettet af:</span>
-        <span>{{ users[ticket.creator]?.name ?? 'Ukendt' }}</span>
-        <span>Udføres af:</span>
-        <span>{{ users[ticket.assignee]?.name ?? 'Ukendt' }}</span>
+    </template>
+  </Card>
+  <div class="card-body d-flex">
+    <div class="ticket-body w-100">
+      <div class="d-flex align-items-center pb-2">
+        <h5 class="ps-3 mb-1"></h5>
+      </div>
+      <p></p>
+      <div>
+        <div class="card shadow-sm p-2 mt-3" v-for="message of messages?.slice().reverse()" :key="message.id">
+          <span style="color: #ccc"
+            >Oprettet: {{ new Date(message.posted * 1000).toLocaleString() }} | {{ users[message.user]?.name }}</span
+          >
+          <span>{{ message?.message }}</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.p-chip {
+  font-size: 14px;
+
+  .p-chip-text {
+    line-height: 1.5;
+    margin-top: 0.375rem;
+    margin-bottom: 0.375rem;
+  }
+}
 .ticket-actions {
   height: min-content;
   background-color: #eee;

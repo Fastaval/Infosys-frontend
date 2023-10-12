@@ -1,5 +1,6 @@
 import Button from 'primevue/button';
 import Card from 'primevue/card';
+import Chip from 'primevue/chip';
 import Column from 'primevue/column';
 import PrimeVue from 'primevue/config';
 import DataTable from 'primevue/datatable';
@@ -29,6 +30,7 @@ app.component('Button', Button);
 app.component('Dialog', Dialog);
 app.component('Textarea', Textarea);
 app.component('Card', Card);
+app.component('Chip', Chip);
 app.component('Column', Column);
 app.component('DataTable', DataTable);
 app.component('Dropdown', Dropdown);
@@ -41,3 +43,6 @@ app.use(router);
 app.use(PrimeVue, { ripple: true });
 
 app.mount('.content-container');
+
+// Use for debugging logged in user
+// window?.infosys = { user_id: 241 };

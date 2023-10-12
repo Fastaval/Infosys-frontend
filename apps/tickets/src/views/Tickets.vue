@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { createTicket, fetchTickets } from '../services/tickets.service';
 import { getTranslations } from '../services/translations.service';
@@ -9,6 +9,7 @@ const router = useRouter();
 const tickets = ref();
 const filteredTickets = ref();
 const users = ref();
+const loggedInUser = ref();
 const tr = ref();
 const open = ref(false);
 const onlyShowOpen = ref(false);
@@ -37,17 +38,16 @@ const getTickets = async () => {
   });
 };
 
-const filterTickets = () => {
-  filteredTickets.value = tickets.value.filter(
+const filterTickets = () =>
+  (filteredTickets.value = tickets.value.filter(
     (ticket) => ticketNameIncludes(ticket) && ticketStatusOpen(ticket) && ticketOnlyMine(ticket)
-  );
-};
+  ));
 
 const ticketNameIncludes = (ticket) => ticket.name.toLowerCase().includes(searchFilter.value.toLowerCase()) ?? true;
 
 const ticketStatusOpen = (ticket) => (onlyShowOpen.value ? ticket.open === 1 : true);
 
-const ticketOnlyMine = (ticket) => (onlyShowMine.value ? ticket.assignee === window.infosys?.user_id : true);
+const ticketOnlyMine = (ticket) => (onlyShowMine.value ? ticket.assignee === loggedInUser.value : true);
 
 const openTicketModal = () => {
   ticketName.value = '';
@@ -79,6 +79,10 @@ onBeforeMount(async () => {
   tr.value = await getTranslations();
   users.value = Object.values(await getUserList());
   await getTickets();
+});
+
+onUpdated(async () => {
+  loggedInUser.value = users.value.find((user) => user.id === window?.infosys?.user_id)?.name;
 });
 </script>
 
@@ -202,10 +206,8 @@ onBeforeMount(async () => {
 <style scoped>
 .p-toolbar {
   padding: 1rem 0;
-}
-
-.p-inputswitch {
-  margin-top: 2px;
+  background-color: transparent;
+  border: 0;
 }
 
 .pi {
@@ -226,12 +228,13 @@ onBeforeMount(async () => {
 }
 
 label {
-  margin-bottom: 0;
+  margin: auto 0;
 }
 
 .help-text {
   font-size: 12px;
   color: #6c757d;
   margin-top: 0.5rem;
+  cursor: default;
 }
 </style>
