@@ -143,15 +143,25 @@ onBeforeMount(async () => {
 
   <Dialog v-model:visible="open" modal class="newTicket">
     <template #header><h4>Opret opgave</h4></template>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+    <div style="display: grid; grid-template-columns: minmax(400px, 800px) 1fr; gap: 1rem">
       <div style="display: flex; flex-direction: column">
         <label class="help-text">Navn/Titel</label>
-        <InputText v-model.trim="ticketName" required />
+        <InputText v-model.trim="ticketName" required style="width: 400px" />
 
         <label class="help-text">Opgavebeskrivelse</label>
         <Textarea v-model.trim="ticketDescription" :autoResize="true" :rows="10" style="width: 100%" required />
       </div>
-      <div style="display: flex; flex-direction: column">
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          background-color: #eee;
+          padding: 1rem;
+          height: min-content;
+          padding-bottom: 1.5rem;
+          border-radius: 4px;
+        "
+      >
         <label class="help-text">Kategori</label>
         <Dropdown
           v-model="ticketCategory"
@@ -222,5 +232,6 @@ label {
 .help-text {
   font-size: 12px;
   color: #6c757d;
+  margin-top: 0.5rem;
 }
 </style>
