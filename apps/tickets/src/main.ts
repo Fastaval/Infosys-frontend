@@ -13,6 +13,7 @@ import Textarea from 'primevue/textarea';
 import Toolbar from 'primevue/toolbar';
 import { createApp } from 'vue';
 import App from './App.vue';
+import TicketsDialog from './components/ticketsDialog.vue';
 import router from './router';
 import './styles.scss';
 
@@ -39,6 +40,7 @@ app.component('InputSwitch', InputSwitch);
 app.component('InputText', InputText);
 app.component('Row', Row);
 app.component('Toolbar', Toolbar);
+app.component('TicketsDialog', TicketsDialog);
 
 app.use(router);
 app.use(PrimeVue, { ripple: true });
