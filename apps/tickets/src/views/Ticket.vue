@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { Ref, onBeforeMount, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { MessageDetails, TicketDetails, getTicket, getTicketMessages } from '../services/tickets.service';
+import { MessageDetails, TicketDetails, getTicket, getTicketMessages, updateTicket } from '../services/tickets.service';
 import { getTranslations } from '../services/translations.service';
 import { getUserList } from '../services/users.service';
 
 const route = useRoute();
 const ticket: Ref<TicketDetails> = ref();
 const messages: Ref<MessageDetails[]> = ref();
+const editTicketDialogOpen = ref(false);
 const users = ref();
 const tr = ref();
 
-const getTicketLabel = () => {
+const getFormattedTicketLabel = () => {
   const open = ticket?.value.open === 1 ? tr.value.tickets?.open?.da : tr.value.tickets?.closed?.da;
   const status =
     ticket.value.open === 1
@@ -21,10 +22,19 @@ const getTicketLabel = () => {
   return `${open} - ${status}`;
 };
 
+const editTicket = async () => {
+  await updateTicket(ticket.value).then(async () => await getTicketInfo());
+};
+
+const getTicketInfo = async () =>
+  await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id as string]));
+
+const formIsInvalid = () => !ticket.value.name || !ticket.value.description || !ticket.value.assignee;
+
 onBeforeMount(async () => {
   await getTranslations().then((result) => (tr.value = result));
   await getUserList().then((result) => (users.value = result));
-  await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id as string]));
+  await getTicketInfo();
   await getTicketMessages(route.params.id).then((response) => (messages.value = response.messages));
 });
 </script>
@@ -34,7 +44,7 @@ onBeforeMount(async () => {
   <Card class="card shadow mt-3" v-if="users && ticket">
     <template #title>
       {{ ticket?.name }}
-      <Chip class="chip" :label="getTicketLabel()" />
+      <Chip class="chip" :label="getFormattedTicketLabel()" />
     </template>
     <template #content>
       <div style="display: inline-flex">
@@ -70,6 +80,63 @@ onBeforeMount(async () => {
       </div>
     </div>
   </div>
+
+  <Dialog v-model:visible="editTicketDialogOpen" modal class="newTicket">
+    <template #header><h4>Opret opgave</h4></template>
+    <div style="display: grid; grid-template-columns: minmax(400px, 800px) 1fr; gap: 1rem">
+      <div style="display: flex; flex-direction: column">
+        <label class="help-text">Navn/Titel</label>
+        <InputText v-model.trim="ticket.name" required style="width: 400px" />
+
+        <label class="help-text">Opgavebeskrivelse</label>
+        <Textarea v-model.trim="ticket.description" :autoResize="true" :rows="10" style="width: 100%" required />
+      </div>
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          background-color: #eee;
+          padding: 1rem;
+          height: min-content;
+          padding-bottom: 1.5rem;
+          border-radius: 4px;
+        "
+      >
+        <label class="help-text">Kategori</label>
+        <Dropdown
+          v-model="ticket.category"
+          :options="tr.tickets.category.map((item, index) => ({ label: item.da, value: index }))"
+          optionLabel="label"
+          optionValue="value"
+        />
+
+        <label class="help-text">Prioritet</label>
+        <Dropdown
+          v-model="ticket.priority"
+          :options="tr.tickets.priority.map((item, index) => ({ label: item.da, value: index }))"
+          optionLabel="label"
+          optionValue="value"
+        />
+
+        <label class="help-text">Udføres af</label>
+        <Dropdown
+          v-model="ticket.assignee"
+          :options="users"
+          :resetFilterOnHide="true"
+          optionLabel="name"
+          optionValue="id"
+          filter
+        />
+      </div>
+    </div>
+
+    <template #footer>
+      <div style="display: inline-flex; gap: 1rem">
+        <Button severity="info" text label="Luk" icon="pi pi-times" @click="editTicketDialogOpen = false" />
+        <Button label="Opret opgave" raised :disabled="formIsInvalid()" @click="editTicket()" />
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <style scoped>

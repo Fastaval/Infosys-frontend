@@ -11,7 +11,7 @@ const filteredTickets = ref();
 const users = ref();
 const loggedInUser = ref();
 const tr = ref();
-const open = ref(false);
+const createTicketDialogOpen = ref(false);
 const onlyShowOpen = ref(false);
 const onlyShowMine = ref(false);
 const searchFilter = ref('');
@@ -52,7 +52,7 @@ const ticketOnlyMine = (ticket) => (onlyShowMine.value ? ticket.assignee === log
 const openTicketModal = () => {
   ticketName.value = '';
   ticketDescription.value = '';
-  open.value = true;
+  createTicketDialogOpen.value = true;
 };
 
 const createNewTicket = async () => {
@@ -64,7 +64,7 @@ const createNewTicket = async () => {
     assignee: ticketAssignee.value
   }).then(async () => {
     await getTickets();
-    open.value = false;
+    createTicketDialogOpen.value = false;
   });
 };
 
@@ -88,15 +88,7 @@ onUpdated(async () => {
 
 <template>
   <div>
-    <Button
-      style="gap: 0.5rem"
-      icon="pi pi-plus"
-      size="small"
-      severity="success"
-      raised
-      @click="openTicketModal()"
-      label="Opret opgave"
-    />
+    <Button style="gap: 0.5rem" icon="pi pi-plus" size="small" raised @click="openTicketModal()" label="Opret opgave" />
   </div>
   <Toolbar>
     <template #start>
@@ -145,7 +137,7 @@ onUpdated(async () => {
     <Column field="status" header="Status" sortable></Column>
   </DataTable>
 
-  <Dialog v-model:visible="open" modal class="newTicket">
+  <Dialog v-model:visible="createTicketDialogOpen" modal class="newTicket">
     <template #header><h4>Opret opgave</h4></template>
     <div style="display: grid; grid-template-columns: minmax(400px, 800px) 1fr; gap: 1rem">
       <div style="display: flex; flex-direction: column">
@@ -196,7 +188,7 @@ onUpdated(async () => {
 
     <template #footer>
       <div style="display: inline-flex; gap: 1rem">
-        <Button severity="info" text label="Luk" icon="pi pi-times" @click="open = false" />
+        <Button severity="info" text label="Luk" icon="pi pi-times" @click="createTicketDialogOpen = false" />
         <Button label="Opret opgave" raised :disabled="formIsInvalid()" @click="createNewTicket()" />
       </div>
     </template>
