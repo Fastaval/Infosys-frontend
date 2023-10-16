@@ -88,7 +88,7 @@ onUpdated(async () => {
 
 <template>
   <div>
-    <Button style="gap: 0.5rem" icon="pi pi-plus" size="small" raised @click="openTicketModal()" label="Opret opgave" />
+    <Button icon="pi pi-plus" size="small" raised @click="openTicketModal()" label="Opret" />
   </div>
   <Toolbar>
     <template #start>
@@ -119,11 +119,13 @@ onUpdated(async () => {
   <DataTable
     v-if="filteredTickets"
     :value="filteredTickets"
-    :rows="5"
+    :rows="10"
     :rowsPerPageOptions="[5, 10, 20, 50, 100]"
     :rowHover="true"
     @row-click="onRowClick"
     paginator
+    paginatorTemplate=" FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+    currentPageReportTemplate="{first}-{last} ud af {totalRecords}"
     stripedRows
     removableSort
     size="small"
@@ -139,7 +141,7 @@ onUpdated(async () => {
 
   <Dialog v-model:visible="createTicketDialogOpen" modal class="newTicket">
     <template #header><h4>Opret opgave</h4></template>
-    <div style="display: grid; grid-template-columns: minmax(400px, 800px) 1fr; gap: 1rem">
+    <div style="display: grid; grid-template-columns: minmax(400px, 800px) minmax(150px, 300px); gap: 1rem">
       <div style="display: flex; flex-direction: column">
         <label class="help-text">Navn/Titel</label>
         <InputText v-model.trim="ticketName" required style="width: 400px" />
@@ -196,6 +198,12 @@ onUpdated(async () => {
 </template>
 
 <style scoped>
+.p-button-sm {
+  font-size: 12.25px;
+  line-height: 15px;
+  padding: 9px 15px;
+  align-items: center;
+}
 .p-toolbar {
   padding: 1rem 0;
   background-color: transparent;

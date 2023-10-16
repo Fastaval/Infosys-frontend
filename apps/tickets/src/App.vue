@@ -1,7 +1,7 @@
 <script setup></script>
 
 <template>
-  <h3>Opgaver til tilmelding og infosys</h3>
+  <h3 style="text-align: center">Opgaver til tilmelding og infosys</h3>
   <RouterView />
 </template>
 

@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { Ref, onBeforeMount, ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { MessageDetails, TicketDetails, getTicket, getTicketMessages, updateTicket } from '../services/tickets.service';
+import { getTicket, getTicketMessages, updateTicket } from '../services/tickets.service';
 import { getTranslations } from '../services/translations.service';
 import { getUserList } from '../services/users.service';
 
 const route = useRoute();
-const ticket: Ref<TicketDetails> = ref();
-const messages: Ref<MessageDetails[]> = ref();
+const ticket = ref();
+const ticketEdited = ref();
+const messages = ref();
 const editTicketDialogOpen = ref(false);
+const dialogEditLoading = ref(false);
 const users = ref();
 const tr = ref();
 
@@ -23,32 +25,42 @@ const getFormattedTicketLabel = () => {
 };
 
 const editTicket = async () => {
-  await updateTicket(ticket.value).then(async () => await getTicketInfo());
+  dialogEditLoading.value = true;
+  await updateTicket(ticketEdited.value).then(async () => {
+    await getTicketInfo();
+    editTicketDialogOpen.value = false;
+    dialogEditLoading.value = false;
+  });
+};
+
+const openTicketModal = () => {
+  ticketEdited.value = { ...ticket.value };
+  editTicketDialogOpen.value = true;
 };
 
 const getTicketInfo = async () =>
   await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id as string]));
 
-const formIsInvalid = () => !ticket.value.name || !ticket.value.description || !ticket.value.assignee;
+const formIsInvalid = () => !ticketEdited.value.name || !ticketEdited.value.description || !ticketEdited.value.assignee;
 
 onBeforeMount(async () => {
   await getTranslations().then((result) => (tr.value = result));
-  await getUserList().then((result) => (users.value = result));
+  users.value = Object.values(await getUserList());
   await getTicketInfo();
   await getTicketMessages(route.params.id).then((response) => (messages.value = response.messages));
 });
 </script>
 
 <template>
-  <RouterLink to="/">&larr; Tilbage til ticket listen</RouterLink>
-  <Card class="card shadow mt-3" v-if="users && ticket">
+  <RouterLink to="/" style="margin-bottom: 1rem; display: inline-flex">&larr; Tilbage </RouterLink>
+  <Card v-if="users && ticket">
     <template #title>
-      {{ ticket?.name }}
-      <Chip class="chip" :label="getFormattedTicketLabel()" />
+      {{ ticket?.name }} <Chip class="chip" :label="getFormattedTicketLabel()" />
+      <Button style="float: right" icon="pi pi-pencil" rounded @click="openTicketModal()" />
     </template>
     <template #content>
-      <div style="display: inline-flex">
-        <div>{{ ticket?.description ?? 'Ingen beskrivelse' }}</div>
+      <div style="display: flex">
+        <div style="width: 100%">{{ ticket?.description ?? 'Ingen beskrivelse' }}</div>
         <div class="ticket-actions">
           <span>Oprettet:</span>
           <span>{{ ticket.created ? new Date(ticket.created * 1000).toLocaleString() : 'Ukendt' }}</span>
@@ -57,9 +69,9 @@ onBeforeMount(async () => {
           <span>Prioritet:</span>
           <span>{{ tr?.tickets?.priority[ticket.priority].da ?? 'Ukendt' }}</span>
           <span>Oprettet af:</span>
-          <span>{{ users[ticket.creator]?.name ?? 'Ukendt' }}</span>
+          <span>{{ users.find((user) => user.id === ticket.creator).name ?? 'Ukendt' }}</span>
           <span>Udføres af:</span>
-          <span>{{ users[ticket.assignee]?.name ?? 'Ukendt' }}</span>
+          <span>{{ users.find((user) => user.id === ticket.assignee).name ?? 'Ukendt' }}</span>
         </div>
       </div>
     </template>
@@ -81,15 +93,15 @@ onBeforeMount(async () => {
     </div>
   </div>
 
-  <Dialog v-model:visible="editTicketDialogOpen" modal class="newTicket">
-    <template #header><h4>Opret opgave</h4></template>
-    <div style="display: grid; grid-template-columns: minmax(400px, 800px) 1fr; gap: 1rem">
+  <Dialog v-if="ticketEdited" v-model:visible="editTicketDialogOpen" modal class="newTicket">
+    <template #header><h4>Rediger opgave</h4></template>
+    <div style="display: grid; grid-template-columns: minmax(400px, 800px) minmax(150px, 300px); gap: 1rem">
       <div style="display: flex; flex-direction: column">
         <label class="help-text">Navn/Titel</label>
-        <InputText v-model.trim="ticket.name" required style="width: 400px" />
+        <InputText v-model.trim="ticketEdited.name" required style="width: 400px" />
 
         <label class="help-text">Opgavebeskrivelse</label>
-        <Textarea v-model.trim="ticket.description" :autoResize="true" :rows="10" style="width: 100%" required />
+        <Textarea v-model.trim="ticketEdited.description" :autoResize="true" :rows="10" style="width: 100%" required />
       </div>
       <div
         style="
@@ -104,7 +116,7 @@ onBeforeMount(async () => {
       >
         <label class="help-text">Kategori</label>
         <Dropdown
-          v-model="ticket.category"
+          v-model="ticketEdited.category"
           :options="tr.tickets.category.map((item, index) => ({ label: item.da, value: index }))"
           optionLabel="label"
           optionValue="value"
@@ -112,7 +124,7 @@ onBeforeMount(async () => {
 
         <label class="help-text">Prioritet</label>
         <Dropdown
-          v-model="ticket.priority"
+          v-model="ticketEdited.priority"
           :options="tr.tickets.priority.map((item, index) => ({ label: item.da, value: index }))"
           optionLabel="label"
           optionValue="value"
@@ -120,7 +132,7 @@ onBeforeMount(async () => {
 
         <label class="help-text">Udføres af</label>
         <Dropdown
-          v-model="ticket.assignee"
+          v-model="ticketEdited.assignee"
           :options="users"
           :resetFilterOnHide="true"
           optionLabel="name"
@@ -133,7 +145,7 @@ onBeforeMount(async () => {
     <template #footer>
       <div style="display: inline-flex; gap: 1rem">
         <Button severity="info" text label="Luk" icon="pi pi-times" @click="editTicketDialogOpen = false" />
-        <Button label="Opret opgave" raised :disabled="formIsInvalid()" @click="editTicket()" />
+        <Button label="Gem" raised :disabled="formIsInvalid()" @click="editTicket()" :loading="dialogEditLoading" />
       </div>
     </template>
   </Dialog>
@@ -150,6 +162,7 @@ onBeforeMount(async () => {
   }
 }
 .ticket-actions {
+  border-radius: 6px;
   height: min-content;
   background-color: #eee;
   display: grid;
@@ -168,5 +181,12 @@ onBeforeMount(async () => {
     padding-left: 16px;
     text-align: right;
   }
+}
+
+.help-text {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 0.5rem;
+  cursor: default;
 }
 </style>

@@ -31,12 +31,12 @@ const mockedTickets = {
   2: {
     id: 2,
     name: 'Ticket system til Infosys',
-    category: 0,
-    priority: 0,
+    category: 1,
+    priority: 1,
     status: 1,
     open: 1,
     creator: 162,
-    assignee: 162,
+    assignee: 156,
     description: null,
     created: null,
     last_edit: null
