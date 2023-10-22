@@ -10,13 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nrwl/nx-set-shas@v3
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build
-        run: nx run tickets:build
+        run: npx nx run tickets:build
 
       - name: Remove unneeded files
         run: rm -rf /dist/apps/tickets/*
