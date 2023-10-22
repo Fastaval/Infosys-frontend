@@ -11,6 +11,26 @@ const ticketEdited = ref();
 const messages = ref();
 const editTicketDialogOpen = ref(false);
 const dialogEditLoading = ref(false);
+let statusOptions = [
+  {
+    label: 'Lukket',
+    options: [
+      { label: 'Annulleret', open: 0, status: 0 },
+      { label: 'Godkendt', open: 0, status: 1 },
+      { label: 'Kan/vil ikke lave', open: 0, status: 2 }
+    ]
+  },
+  {
+    label: 'Åben',
+    options: [
+      { label: 'Oprettet', open: 1, status: 0 },
+      { label: 'Startet', open: 1, status: 1 },
+      { label: 'Skal testes', open: 1, status: 2 },
+      { label: 'Venter', open: 1, status: 3 }
+    ]
+  }
+];
+const statusSelected = ref();
 const users = ref();
 const tr = ref();
 
@@ -22,6 +42,10 @@ const getFormattedTicketLabel = () => {
       : tr.value.tickets?.status?.closed[ticket.value.status]?.da;
 
   return `${open} - ${status}`;
+};
+
+const updateTicketStatus = () => {
+  ticketEdited.value = { ...ticketEdited.value, open: statusSelected.value.open, status: statusSelected.value.status };
 };
 
 const editTicket = async () => {
@@ -36,6 +60,7 @@ const editTicket = async () => {
 const openTicketModal = () => {
   ticketEdited.value = { ...ticket.value };
   editTicketDialogOpen.value = true;
+  statusSelected.value = statusOptions[ticket.value.open].options[ticket.value.status];
 };
 
 const getTicketInfo = async () =>
@@ -114,6 +139,16 @@ onBeforeMount(async () => {
           border-radius: 4px;
         "
       >
+        <label class="help-text">Status</label>
+        <Dropdown
+          class="status-select"
+          v-model="statusSelected"
+          :options="statusOptions"
+          optionLabel="label"
+          optionGroupLabel="label"
+          optionGroupChildren="options"
+          v-on:change="updateTicketStatus()"
+        ></Dropdown>
         <label class="help-text">Kategori</label>
         <Dropdown
           v-model="ticketEdited.category"
