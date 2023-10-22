@@ -18,7 +18,7 @@ jobs:
         run: npx nx run tickets:build
 
       - name: Remove unneeded files
-        run: rm -f dist/apps/tickets/*
+        run: find dist/apps/tickets -maxdepth 1 -type f -delete
 
       - run: ls
       - run: ls dist/apps/tickets/
