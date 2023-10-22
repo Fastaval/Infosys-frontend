@@ -28,3 +28,6 @@ jobs:
         with:
           name: my-artifact
           path: dist/apps/tickets/
+
+      - name: My Action
+        uses: Fastaval/Infosys/.github/actions/build-frontend@master
