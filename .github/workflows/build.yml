@@ -30,4 +30,4 @@ jobs:
           path: dist/apps/tickets/
 
       - name: My Action
-        uses: Fastaval/Infosys/.github/actions/build-frontend@master
+        uses: Fastaval/Infosys/.github/actions/build-frontend@main
