@@ -18,9 +18,10 @@ jobs:
         run: npx nx run tickets:build
 
       - name: Remove unneeded files
-        run: rm -rf /dist/apps/tickets/*
+        run: rm -f dist/apps/tickets/*
 
-      - run: ls /dist/apps/tickets/
+      - run: ls
+      - run: ls dist/apps/tickets/
 
       - name: Archive files
         uses: actions/upload-artifact@v2
