@@ -8,6 +8,7 @@ import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
 import InputSwitch from 'primevue/inputswitch';
 import InputText from 'primevue/inputtext';
+import Menu from 'primevue/menu';
 import Row from 'primevue/row';
 import Textarea from 'primevue/textarea';
 import Toolbar from 'primevue/toolbar';
@@ -29,7 +30,6 @@ if (import.meta.env.DEV) {
 const app = createApp(App);
 app.component('Button', Button);
 app.component('Dialog', Dialog);
-app.component('Textarea', Textarea);
 app.component('Card', Card);
 app.component('Chip', Chip);
 app.component('Column', Column);
@@ -37,7 +37,9 @@ app.component('DataTable', DataTable);
 app.component('Dropdown', Dropdown);
 app.component('InputSwitch', InputSwitch);
 app.component('InputText', InputText);
+app.component('Menu', Menu);
 app.component('Row', Row);
+app.component('Textarea', Textarea);
 app.component('Toolbar', Toolbar);
 
 app.use(router);

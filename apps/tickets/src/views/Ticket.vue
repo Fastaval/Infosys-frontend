@@ -1,7 +1,7 @@
-<script setup lang="ts">
+<script setup>
 import { onBeforeMount, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { getTicket, getTicketMessages, updateTicket } from '../services/tickets.service';
+import { fetchTicketMessages, getTicket, updateTicket } from '../services/tickets.service';
 import { getTranslations } from '../services/translations.service';
 import { getUserList } from '../services/users.service';
 
@@ -9,8 +9,12 @@ const route = useRoute();
 const ticket = ref();
 const ticketEdited = ref();
 const messages = ref();
+const ticketMenuOpened = ref();
 const editTicketDialogOpen = ref(false);
 const dialogEditLoading = ref(false);
+const statusSelected = ref();
+const users = ref();
+const tr = ref();
 let statusOptions = [
   {
     label: 'Lukket',
@@ -30,9 +34,6 @@ let statusOptions = [
     ]
   }
 ];
-const statusSelected = ref();
-const users = ref();
-const tr = ref();
 
 const getFormattedTicketLabel = () => {
   const open = ticket?.value.open === 1 ? tr.value.tickets?.open?.da : tr.value.tickets?.closed?.da;
@@ -64,15 +65,24 @@ const openTicketModal = () => {
 };
 
 const getTicketInfo = async () =>
-  await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id as string]));
+  await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id]));
 
 const formIsInvalid = () => !ticketEdited.value.name || !ticketEdited.value.description || !ticketEdited.value.assignee;
+
+const toggleMenuOpened = (event) => {
+  ticketMenuOpened.value.toggle(event);
+};
+
+const items = ref([
+  { label: 'New', icon: 'pi pi-fw pi-plus', command: () => openTicketModal() },
+  { label: 'Delete', icon: 'pi pi-fw pi-trash' }
+]);
 
 onBeforeMount(async () => {
   await getTranslations().then((result) => (tr.value = result));
   users.value = Object.values(await getUserList());
   await getTicketInfo();
-  await getTicketMessages(route.params.id).then((response) => (messages.value = response.messages));
+  await fetchTicketMessages(route.params.id).then((response) => (messages.value = response.messages));
 });
 </script>
 
@@ -81,7 +91,17 @@ onBeforeMount(async () => {
   <Card v-if="users && ticket">
     <template #title>
       {{ ticket?.name }} <Chip class="chip" :label="getFormattedTicketLabel()" />
-      <Button style="float: right" icon="pi pi-pencil" rounded @click="openTicketModal()" />
+
+      <Button
+        style="float: right"
+        type="button"
+        icon="pi pi-ellipsis-v"
+        @click="toggleMenuOpened"
+        aria-haspopup="true"
+        aria-controls="overlay_menu"
+        rounded
+      />
+      <Menu ref="ticketMenuOpened" id="overlay_menu" :model="items" :popup="true" />
     </template>
     <template #content>
       <div style="display: flex">
