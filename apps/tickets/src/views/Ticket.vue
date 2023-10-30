@@ -1,4 +1,5 @@
 <script setup>
+import { formatDateAndTime } from 'libs/shared/helpers/datetimeconverter.helper.ts';
 import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { fetchTicketMessages, getTicket, updateTicket, updateTicketMessage } from '../services/tickets.service';
@@ -47,12 +48,12 @@ const getTicketStatus = () => {
 
   const severity = ticket.value.open === 1 ? 'success' : 'secondary';
 
-  return { pt: { root: { class: `p-badge p-badge-${severity}` } }, label: `${openText} - ${statusText}` };
+  return { severity: severity, value: `${openText} - ${statusText}` };
 };
 
 const getTicketCategory = () => ({
-  pt: { root: { class: 'p-badge p-badge-info' } },
-  label: tr.value.tickets.category[ticket.value.category].da
+  severity: 'info',
+  value: tr.value.tickets.category[ticket.value.category].da
 });
 
 const updateTicketStatus = () => {
@@ -102,11 +103,6 @@ const messageFormIsInvalid = () => !messageEdited.value;
 
 const getUsername = (id) => users.value.find((user) => user.id === id).name;
 
-const getFormattedDate = (date) =>
-  new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeStyle: 'medium' })
-    .format(new Date(date * 1000))
-    .replace(',', '');
-
 onBeforeMount(async () => {
   await getTranslations().then((result) => (tr.value = result));
   users.value = Object.values(await getUserList());
@@ -122,8 +118,8 @@ onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
   <Card v-if="users && ticket">
     <template #title>
       {{ ticket?.name }}
-      <Chip v-bind="getTicketStatus()" />
-      <Chip v-bind="getTicketCategory()" />
+      <Tag v-bind="getTicketStatus()" rounded></Tag>
+      <Tag v-bind="getTicketCategory()" rounded></Tag>
       <div style="display: flex; float: right; gap: 1rem">
         <Button
           icon="pi pi-file-edit"
@@ -150,9 +146,9 @@ onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
         <div style="width: 100%; white-space: pre-wrap">{{ ticket?.description ?? 'Ingen beskrivelse' }}</div>
         <div class="ticket-details">
           <span>Oprettet:</span>
-          <span>{{ ticket.created ? new Date(ticket.created * 1000).toLocaleString() : 'Ukendt' }}</span>
+          <span>{{ ticket.created ? formatDateAndTime(ticket.created) : 'Ukendt' }}</span>
           <span>Ændret:</span>
-          <span>{{ ticket.last_edit ? new Date(ticket.last_edit * 1000).toLocaleString() : '-' }} </span>
+          <span>{{ ticket.last_edit ? formatDateAndTime(ticket.last_edit) : '-' }} </span>
           <span>Prioritet:</span>
           <span>{{ tr?.tickets?.priority[ticket.priority].da ?? 'Ukendt' }}</span>
           <span>Oprettet af:</span>
@@ -166,7 +162,7 @@ onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
   <Timeline :value="messages" style="padding-top: 1rem">
     <template #opposite="prop">
       <small class="p-text-secondary">
-        {{ getUsername(prop.item.user) }} | {{ getFormattedDate(prop.item.posted) }}
+        {{ getUsername(prop.item.user) }} | {{ formatDateAndTime(prop.item.posted) }}
       </small>
     </template>
     <template #marker="prop">
@@ -327,6 +323,10 @@ onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
     margin: 3px 0;
     position: relative;
   }
+}
+
+.p-tag {
+  margin-left: 10px;
 }
 
 :deep(.p-button-sm + .p-timeline-event-connector) {

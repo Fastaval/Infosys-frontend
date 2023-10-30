@@ -137,6 +137,7 @@ onUpdated(async () => {
     <Column field="creator" header="Opretter" sortable></Column>
     <Column field="assignee" header="Udfører" sortable></Column>
     <Column field="status" header="Status" sortable></Column>
+    <Column field="last_edit" header="Ændret" sortable></Column>
   </DataTable>
 
   <Dialog v-model:visible="createTicketDialogOpen" modal class="newTicket">
