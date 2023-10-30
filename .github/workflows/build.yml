@@ -16,18 +16,3 @@ jobs:
 
       - name: Build
         run: npx nx run tickets:build
-
-      - name: Remove unneeded files
-        run: find dist/apps/tickets -maxdepth 1 -type f -delete
-
-      - run: ls
-      - run: ls dist/apps/tickets/
-
-      - name: Archive files
-        uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact
-          path: dist/apps/tickets/
-
-      - name: My Action
-        uses: Fastaval/Infosys/.github/actions/build-frontend@main
