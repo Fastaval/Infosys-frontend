@@ -48,6 +48,11 @@ tbody tr:not(.p-highlight):hover {
   }
 }
 
+.p-menu-list {
+  padding: 0;
+  margin: 0;
+}
+
 .p-dropdown-label {
   padding: 10.5px;
   font-size: 14px;
@@ -59,5 +64,31 @@ ul.p-dropdown-items {
 
   .p-dropdown-item {
     padding: 10.5px;
+  }
+}
+
+.p-inputswitch {
+  height: 1rem;
+  width: 2rem;
+
+  .p-inputswitch-slider:before {
+    height: 14px;
+    width: 14px;
+    margin-top: -7px;
+    left: 0;
+  }
+
+  &.p-inputswitch-checked .p-inputswitch-slider:before {
+    left: -4px;
+  }
+}
+
+.p-chip {
+  font-size: 14px;
+  margin-left: 10px;
+
+  .p-chip-text {
+    line-height: 25px;
+    margin: 0;
   }
 }

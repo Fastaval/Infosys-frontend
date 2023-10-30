@@ -1,16 +1,23 @@
-<script setup lang="ts">
-import { onBeforeMount, ref } from 'vue';
+<script setup>
+import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { getTicket, getTicketMessages, updateTicket } from '../services/tickets.service';
+import { fetchTicketMessages, getTicket, updateTicket, updateTicketMessage } from '../services/tickets.service';
 import { getTranslations } from '../services/translations.service';
 import { getUserList } from '../services/users.service';
 
 const route = useRoute();
+const loggedInUser = ref();
 const ticket = ref();
 const ticketEdited = ref();
+const messageEdited = ref();
 const messages = ref();
 const editTicketDialogOpen = ref(false);
+const editMessageDialogOpen = ref(false);
+const editMessageDialogType = ref('new');
 const dialogEditLoading = ref(false);
+const statusSelected = ref();
+const users = ref();
+const tr = ref();
 let statusOptions = [
   {
     label: 'Lukket',
@@ -30,19 +37,23 @@ let statusOptions = [
     ]
   }
 ];
-const statusSelected = ref();
-const users = ref();
-const tr = ref();
 
-const getFormattedTicketLabel = () => {
-  const open = ticket?.value.open === 1 ? tr.value.tickets?.open?.da : tr.value.tickets?.closed?.da;
-  const status =
+const getTicketStatus = () => {
+  const openText = ticket?.value.open === 1 ? tr.value.tickets?.open?.da : tr.value.tickets?.closed?.da;
+  const statusText =
     ticket.value.open === 1
       ? tr.value.tickets?.status?.open[ticket.value.status]?.da
       : tr.value.tickets?.status?.closed[ticket.value.status]?.da;
 
-  return `${open} - ${status}`;
+  const severity = ticket.value.open === 1 ? 'success' : 'secondary';
+
+  return { pt: { root: { class: `p-badge p-badge-${severity}` } }, label: `${openText} - ${statusText}` };
 };
+
+const getTicketCategory = () => ({
+  pt: { root: { class: 'p-badge p-badge-info' } },
+  label: tr.value.tickets.category[ticket.value.category].da
+});
 
 const updateTicketStatus = () => {
   ticketEdited.value = { ...ticketEdited.value, open: statusSelected.value.open, status: statusSelected.value.status };
@@ -57,36 +68,87 @@ const editTicket = async () => {
   });
 };
 
+const editMessage = async () => {
+  dialogEditLoading.value = true;
+  await updateTicketMessage(messageEdited.value).then(async () => {
+    await getTicketMessages();
+    editMessageDialogOpen.value = false;
+    dialogEditLoading.value = false;
+  });
+};
+
 const openTicketModal = () => {
   ticketEdited.value = { ...ticket.value };
   editTicketDialogOpen.value = true;
   statusSelected.value = statusOptions[ticket.value.open].options[ticket.value.status];
 };
 
-const getTicketInfo = async () =>
-  await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id as string]));
+const openMessageModal = (message) => {
+  messageEdited.value = { ...message, ticket: ticket.value.id };
+  editMessageDialogType.value = !message ? 'new' : 'edit';
+  editMessageDialogOpen.value = true;
+};
 
-const formIsInvalid = () => !ticketEdited.value.name || !ticketEdited.value.description || !ticketEdited.value.assignee;
+const getTicketInfo = async () =>
+  await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id]));
+
+const getTicketMessages = async () =>
+  await fetchTicketMessages(ticket.value.id).then((response) => (messages.value = response.messages));
+
+const ticketFormIsInvalid = () =>
+  !ticketEdited.value.name || !ticketEdited.value.description || !ticketEdited.value.assignee;
+
+const messageFormIsInvalid = () => !messageEdited.value;
+
+const getUsername = (id) => users.value.find((user) => user.id === id).name;
+
+const getFormattedDate = (date) =>
+  new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeStyle: 'medium' })
+    .format(new Date(date * 1000))
+    .replace(',', '');
 
 onBeforeMount(async () => {
   await getTranslations().then((result) => (tr.value = result));
   users.value = Object.values(await getUserList());
   await getTicketInfo();
-  await getTicketMessages(route.params.id).then((response) => (messages.value = response.messages));
+  await getTicketMessages();
 });
+
+onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
 </script>
 
 <template>
   <RouterLink to="/" style="margin-bottom: 1rem; display: inline-flex">&larr; Tilbage </RouterLink>
   <Card v-if="users && ticket">
     <template #title>
-      {{ ticket?.name }} <Chip class="chip" :label="getFormattedTicketLabel()" />
-      <Button style="float: right" icon="pi pi-pencil" rounded @click="openTicketModal()" />
+      {{ ticket?.name }}
+      <Chip v-bind="getTicketStatus()" />
+      <Chip v-bind="getTicketCategory()" />
+      <div style="display: flex; float: right; gap: 1rem">
+        <Button
+          icon="pi pi-file-edit"
+          @click="openTicketModal()"
+          outlined
+          raised
+          rounded
+          severity="secondary"
+          size="small"
+          v-tooltip.top="'Rediger opgave'"
+        />
+        <Button
+          icon="pi pi-comment"
+          raised
+          rounded
+          size="small"
+          @click="openMessageModal()"
+          v-tooltip.top="'Ny besked'"
+        />
+      </div>
     </template>
     <template #content>
       <div style="display: flex">
         <div style="width: 100%">{{ ticket?.description ?? 'Ingen beskrivelse' }}</div>
-        <div class="ticket-actions">
+        <div class="ticket-details">
           <span>Oprettet:</span>
           <span>{{ ticket.created ? new Date(ticket.created * 1000).toLocaleString() : 'Ukendt' }}</span>
           <span>Ændret:</span>
@@ -101,24 +163,28 @@ onBeforeMount(async () => {
       </div>
     </template>
   </Card>
-  <div class="card-body d-flex">
-    <div class="ticket-body w-100">
-      <div class="d-flex align-items-center pb-2">
-        <h5 class="ps-3 mb-1"></h5>
-      </div>
-      <p></p>
-      <div>
-        <div class="card shadow-sm p-2 mt-3" v-for="message of messages?.slice().reverse()" :key="message.id">
-          <span style="color: #ccc"
-            >Oprettet: {{ new Date(message.posted * 1000).toLocaleString() }} | {{ users[message.user]?.name }}</span
-          >
-          <span>{{ message?.message }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <Timeline :value="messages" style="padding-top: 1rem">
+    <template #opposite="prop">
+      <small class="p-text-secondary">
+        {{ getUsername(prop.item.user) }} | {{ getFormattedDate(prop.item.posted) }}
+      </small>
+    </template>
+    <template #marker="prop">
+      <Button
+        v-if="prop.item.user === loggedInUser"
+        class="timeline-btn"
+        icon="pi pi-file-edit"
+        raised
+        rounded
+        size="small"
+        @click="openMessageModal(prop.item)"
+        v-tooltip.top="'Rediger din besked'"
+      />
+    </template>
+    <template #content="prop"> {{ prop.item.message }} </template>
+  </Timeline>
 
-  <Dialog v-if="ticketEdited" v-model:visible="editTicketDialogOpen" modal class="newTicket">
+  <Dialog v-if="ticketEdited" v-model:visible="editTicketDialogOpen" modal>
     <template #header><h4>Rediger opgave</h4></template>
     <div style="display: grid; grid-template-columns: minmax(400px, 800px) minmax(150px, 300px); gap: 1rem">
       <div style="display: flex; flex-direction: column">
@@ -180,23 +246,43 @@ onBeforeMount(async () => {
     <template #footer>
       <div style="display: inline-flex; gap: 1rem">
         <Button severity="info" text label="Luk" icon="pi pi-times" @click="editTicketDialogOpen = false" />
-        <Button label="Gem" raised :disabled="formIsInvalid()" @click="editTicket()" :loading="dialogEditLoading" />
+        <Button
+          label="Gem"
+          raised
+          :disabled="ticketFormIsInvalid()"
+          @click="editTicket()"
+          :loading="dialogEditLoading"
+        />
+      </div>
+    </template>
+  </Dialog>
+  <Dialog v-model:visible="editMessageDialogOpen" modal style="width: 100%; max-width: 750px; margin: 0 10px">
+    <template #header>
+      <h4>{{ editMessageDialogType === 'new' ? 'Ny besked' : 'Rediger besked' }}</h4>
+    </template>
+    <label class="help-text">Besked</label>
+    <Textarea v-model.trim="messageEdited.message" :autoResize="true" :rows="10" style="width: 100%" required />
+    <template #footer>
+      <div style="display: inline-flex; gap: 1rem">
+        <Button severity="info" text label="Luk" icon="pi pi-times" @click="editMessageDialogOpen = false" />
+        <Button
+          label="Gem"
+          raised
+          :disabled="messageFormIsInvalid()"
+          @click="editMessage"
+          :loading="dialogEditLoading"
+        />
       </div>
     </template>
   </Dialog>
 </template>
 
-<style scoped>
-.p-chip {
-  font-size: 14px;
-
-  .p-chip-text {
-    line-height: 1.5;
-    margin-top: 0.375rem;
-    margin-bottom: 0.375rem;
-  }
+<style scoped lang="scss">
+.success {
+  background-color: red;
 }
-.ticket-actions {
+
+.ticket-details {
   border-radius: 6px;
   height: min-content;
   background-color: #eee;
@@ -223,5 +309,40 @@ onBeforeMount(async () => {
   color: #6c757d;
   margin-top: 0.5rem;
   cursor: default;
+}
+
+.p-button-sm {
+  font-size: 12.25px;
+  line-height: 15px;
+  padding: 9px 15px;
+  align-items: center;
+  &.p-button-icon-only {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  &.timeline-btn {
+    width: 30px;
+    height: 30px;
+    left: -3px;
+    margin: 3px 0;
+    position: relative;
+  }
+}
+
+:deep(.p-button-sm + .p-timeline-event-connector) {
+  margin-left: -6px;
+}
+
+:deep(.p-timeline-event) {
+  min-height: unset;
+}
+
+:deep(.p-timeline-event-content) {
+  flex: 2;
+  padding-bottom: 30px;
+}
+
+:deep(.p-timeline-event-marker) {
+  margin: 3px 0;
 }
 </style>
