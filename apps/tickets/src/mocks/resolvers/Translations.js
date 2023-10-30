@@ -4,7 +4,14 @@ export const mockGetTranslations = (req, res, ctx) => {
 
 const mockedTranslations = {
   tickets: {
-    category: [{ da: 'Andet' }, { da: 'Infosys' }, { da: 'Proces' }, { da: 'Arrangør' }, { da: 'Betaling' }],
+    category: [
+      { da: 'Andet' },
+      { da: 'Infosys' },
+      { da: 'Proces' },
+      { da: 'Arrangør' },
+      { da: 'Betaling' },
+      { da: 'App' }
+    ],
     open: { da: 'Åben' },
     closed: { da: 'Lukket' },
     status: {
