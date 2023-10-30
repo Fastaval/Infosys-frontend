@@ -74,8 +74,8 @@ const toggleMenuOpened = (event) => {
 };
 
 const items = ref([
-  { label: 'New', icon: 'pi pi-fw pi-plus', command: () => openTicketModal() },
-  { label: 'Delete', icon: 'pi pi-fw pi-trash' }
+  { label: 'Rediger', icon: 'pi pi-file-edit', command: () => openTicketModal() },
+  { label: 'Ny besked', icon: 'pi pi-comment' }
 ]);
 
 onBeforeMount(async () => {
@@ -94,12 +94,12 @@ onBeforeMount(async () => {
 
       <Button
         style="float: right"
-        type="button"
-        icon="pi pi-ellipsis-v"
+        icon="pi pi-bars"
         @click="toggleMenuOpened"
         aria-haspopup="true"
         aria-controls="overlay_menu"
-        rounded
+        raised
+        size="small"
       />
       <Menu ref="ticketMenuOpened" id="overlay_menu" :model="items" :popup="true" />
     </template>
@@ -207,6 +207,12 @@ onBeforeMount(async () => {
 </template>
 
 <style scoped>
+.p-button-sm {
+  font-size: 12.25px;
+  line-height: 15px;
+  padding: 9px 15px;
+  align-items: center;
+}
 .p-chip {
   font-size: 14px;
 
