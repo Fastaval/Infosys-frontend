@@ -11,7 +11,7 @@ export const getTicket = async (ticketId: string) => await get(`/tickets/ajax?id
 
 // Ticket Messages
 export const fetchTicketMessages = async (ticketId: string) => await get(`/tickets/${ticketId}/messages`);
-export const createTicketMessages = async (messageDetails: Partial<MessageDetails>) =>
-  await post(`/tickets/${messageDetails.ticket}/messages`);
-export const updateTicketMessages = async (messageDetails: MessageDetails) =>
-  await post(`/tickets/${messageDetails.ticket}/messages`);
+export const createTicketMessage = async (messageDetails: Partial<MessageDetails>) =>
+  await post(`/tickets/${messageDetails.ticket}/messages`, messageDetails);
+export const updateTicketMessage = async (messageDetails: Partial<MessageDetails>) =>
+  await post(`/tickets/${messageDetails.ticket}/messages`, messageDetails);
