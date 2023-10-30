@@ -147,7 +147,7 @@ onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
     </template>
     <template #content>
       <div style="display: flex">
-        <div style="width: 100%">{{ ticket?.description ?? 'Ingen beskrivelse' }}</div>
+        <div style="width: 100%; white-space: pre-wrap">{{ ticket?.description ?? 'Ingen beskrivelse' }}</div>
         <div class="ticket-details">
           <span>Oprettet:</span>
           <span>{{ ticket.created ? new Date(ticket.created * 1000).toLocaleString() : 'Ukendt' }}</span>
@@ -340,6 +340,7 @@ onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
 :deep(.p-timeline-event-content) {
   flex: 2;
   padding-bottom: 30px;
+  white-space: pre-wrap;
 }
 
 :deep(.p-timeline-event-marker) {
