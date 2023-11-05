@@ -1,7 +1,8 @@
 <script setup>
+import { formatDateAndTime } from 'libs/shared/helpers/datetimeconverter.helper.ts';
+import { timeAgo } from 'libs/shared/helpers/timeago.helper.ts';
 import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { timeAgo } from '../../../../libs/shared/helpers/timeago.helper';
 import { createTicket, fetchTickets } from '../services/tickets.service';
 import { getTranslations } from '../services/translations.service';
 import { getUserList } from '../services/users.service';
@@ -143,12 +144,14 @@ onUpdated(async () => {
     <Column field="status" header="Status" sortable></Column>
     <Column field="last_edit" header="Ændret" sortable>
       <template #body="slotProps">
-        {{ timeAgo(slotProps.data.last_edit) }}
+        <div v-tooltip.bottom="formatDateAndTime(slotProps.data.last_edit)">
+          {{ timeAgo(slotProps.data.last_edit) }}
+        </div>
       </template>
     </Column>
     <Column field="created" header="Oprettet" sortable>
       <template #body="slotProps">
-        {{ timeAgo(slotProps.data.created) }}
+        <div v-tooltip.bottom="formatDateAndTime(slotProps.data.created)">{{ timeAgo(slotProps.data.created) }}</div>
       </template>
     </Column>
   </DataTable>
