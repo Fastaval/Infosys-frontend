@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { timeAgo } from '../../../../libs/shared/helpers/timeago.helper';
 import { createTicket, fetchTickets } from '../services/tickets.service';
 import { getTranslations } from '../services/translations.service';
 import { getUserList } from '../services/users.service';
@@ -25,7 +26,6 @@ const getTickets = async () => {
   await fetchTickets().then((response) => {
     tickets.value = Object.values(response.tickets).map((ticket) => {
       ticket.category = tr.value.tickets.category[ticket.category].da;
-      ticket.priority = tr.value.tickets.priority[ticket.priority].da;
       ticket.creator = users.value.find((user) => user.id === ticket.creator).name;
       ticket.assignee = users.value.find((user) => user.id === ticket.assignee).name;
       ticket.status =
@@ -133,11 +133,24 @@ onUpdated(async () => {
     <Column field="id" header="ID" sortable></Column>
     <Column field="category" header="Kategori" sortable></Column>
     <Column field="name" header="Navn" sortable></Column>
-    <Column field="priority" header="Prioritet" sortable></Column>
+    <Column field="priority" header="Prioritet" sortable>
+      <template #body="slotProps">
+        {{ tr.tickets.priority[slotProps.data.priority].da }}
+      </template>
+    </Column>
     <Column field="creator" header="Opretter" sortable></Column>
     <Column field="assignee" header="Udfører" sortable></Column>
     <Column field="status" header="Status" sortable></Column>
-    <Column field="last_edit" header="Ændret" sortable></Column>
+    <Column field="last_edit" header="Ændret" sortable>
+      <template #body="slotProps">
+        {{ timeAgo(slotProps.data.last_edit) }}
+      </template>
+    </Column>
+    <Column field="created" header="Oprettet" sortable>
+      <template #body="slotProps">
+        {{ timeAgo(slotProps.data.created) }}
+      </template>
+    </Column>
   </DataTable>
 
   <Dialog v-model:visible="createTicketDialogOpen" modal class="newTicket">
