@@ -1,3 +1,5 @@
+import TimeAgo from 'javascript-time-ago';
+import da from 'javascript-time-ago/locale/da';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 import Column from 'primevue/column';
@@ -48,5 +50,7 @@ app.directive('tooltip', Tooltip);
 
 app.use(router);
 app.use(PrimeVue, { ripple: true });
+
+TimeAgo.addDefaultLocale(da);
 
 app.mount('.content-container');
