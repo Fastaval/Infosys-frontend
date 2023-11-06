@@ -1,6 +1,7 @@
+import TimeAgo from 'javascript-time-ago';
+import da from 'javascript-time-ago/locale/da';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
-import Chip from 'primevue/chip';
 import Column from 'primevue/column';
 import PrimeVue from 'primevue/config';
 import DataTable from 'primevue/datatable';
@@ -10,6 +11,7 @@ import InputSwitch from 'primevue/inputswitch';
 import InputText from 'primevue/inputtext';
 import Menu from 'primevue/menu';
 import Row from 'primevue/row';
+import Tag from 'primevue/tag';
 import Textarea from 'primevue/textarea';
 import Timeline from 'primevue/timeline';
 import Toolbar from 'primevue/toolbar';
@@ -33,7 +35,6 @@ const app = createApp(App);
 app.component('Button', Button);
 app.component('Dialog', Dialog);
 app.component('Card', Card);
-app.component('Chip', Chip);
 app.component('Column', Column);
 app.component('DataTable', DataTable);
 app.component('Dropdown', Dropdown);
@@ -41,6 +42,7 @@ app.component('InputSwitch', InputSwitch);
 app.component('InputText', InputText);
 app.component('Menu', Menu);
 app.component('Row', Row);
+app.component('Tag', Tag);
 app.component('Textarea', Textarea);
 app.component('Timeline', Timeline);
 app.component('Toolbar', Toolbar);
@@ -48,5 +50,7 @@ app.directive('tooltip', Tooltip);
 
 app.use(router);
 app.use(PrimeVue, { ripple: true });
+
+TimeAgo.addDefaultLocale(da);
 
 app.mount('.content-container');

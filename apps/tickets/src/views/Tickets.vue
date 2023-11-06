@@ -1,4 +1,6 @@
 <script setup>
+import { formatDateAndTime } from 'libs/shared/helpers/datetimeconverter.helper.ts';
+import { timeAgo } from 'libs/shared/helpers/timeago.helper.ts';
 import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { createTicket, fetchTickets } from '../services/tickets.service';
@@ -25,7 +27,6 @@ const getTickets = async () => {
   await fetchTickets().then((response) => {
     tickets.value = Object.values(response.tickets).map((ticket) => {
       ticket.category = tr.value.tickets.category[ticket.category].da;
-      ticket.priority = tr.value.tickets.priority[ticket.priority].da;
       ticket.creator = users.value.find((user) => user.id === ticket.creator).name;
       ticket.assignee = users.value.find((user) => user.id === ticket.assignee).name;
       ticket.status =
@@ -118,25 +119,44 @@ onUpdated(async () => {
 
   <DataTable
     v-if="filteredTickets"
+    @row-click="onRowClick"
     :value="filteredTickets"
     :rows="10"
-    :rowsPerPageOptions="[5, 10, 20, 50, 100]"
     :rowHover="true"
-    @row-click="onRowClick"
-    paginator
+    :sortOrder="-1"
+    :rowsPerPageOptions="[5, 10, 20, 50, 100]"
+    size="small"
+    sort-field="last_edit"
     paginatorTemplate=" FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
     currentPageReportTemplate="{first}-{last} ud af {totalRecords}"
+    paginator
     stripedRows
     removableSort
-    size="small"
   >
+    <template #empty><p style="text-align: center">Ingen opgaver fundet.</p></template>
     <Column field="id" header="ID" sortable></Column>
     <Column field="category" header="Kategori" sortable></Column>
     <Column field="name" header="Navn" sortable></Column>
-    <Column field="priority" header="Prioritet" sortable></Column>
+    <Column field="priority" header="Prioritet" sortable>
+      <template #body="slotProps">
+        {{ tr.tickets.priority[slotProps.data.priority].da }}
+      </template>
+    </Column>
     <Column field="creator" header="Opretter" sortable></Column>
     <Column field="assignee" header="Udfører" sortable></Column>
     <Column field="status" header="Status" sortable></Column>
+    <Column field="last_edit" header="Ændret" sortable>
+      <template #body="slotProps">
+        <div v-tooltip.bottom="formatDateAndTime(slotProps.data.last_edit)">
+          {{ timeAgo(slotProps.data.last_edit) }}
+        </div>
+      </template>
+    </Column>
+    <Column field="created" header="Oprettet" sortable>
+      <template #body="slotProps">
+        <div v-tooltip.bottom="formatDateAndTime(slotProps.data.created)">{{ timeAgo(slotProps.data.created) }}</div>
+      </template>
+    </Column>
   </DataTable>
 
   <Dialog v-model:visible="createTicketDialogOpen" modal class="newTicket">
