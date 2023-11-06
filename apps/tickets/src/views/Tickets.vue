@@ -119,18 +119,21 @@ onUpdated(async () => {
 
   <DataTable
     v-if="filteredTickets"
+    @row-click="onRowClick"
     :value="filteredTickets"
     :rows="10"
-    :rowsPerPageOptions="[5, 10, 20, 50, 100]"
     :rowHover="true"
-    @row-click="onRowClick"
-    paginator
+    :sortOrder="-1"
+    :rowsPerPageOptions="[5, 10, 20, 50, 100]"
+    size="small"
+    sort-field="last_edit"
     paginatorTemplate=" FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
     currentPageReportTemplate="{first}-{last} ud af {totalRecords}"
+    paginator
     stripedRows
     removableSort
-    size="small"
   >
+    <template #empty><p style="text-align: center">Ingen opgaver fundet.</p></template>
     <Column field="id" header="ID" sortable></Column>
     <Column field="category" header="Kategori" sortable></Column>
     <Column field="name" header="Navn" sortable></Column>
