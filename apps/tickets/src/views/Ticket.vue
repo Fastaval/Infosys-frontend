@@ -3,9 +3,7 @@ import { formatDateAndTime } from 'libs/shared/helpers/datetimeconverter.helper.
 import { timeAgo } from 'libs/shared/helpers/timeago.helper.ts';
 import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { fetchTicketMessages, getTicket, updateTicket, updateTicketMessage } from '../services/tickets.service';
-import { getTranslations } from '../services/translations.service';
-import { getUserList } from '../services/users.service';
+import { ticketsService, translationsService, usersService } from '../services';
 
 const route = useRoute();
 const loggedInUser = ref();
@@ -63,7 +61,7 @@ const updateTicketStatus = () => {
 
 const editTicket = async () => {
   dialogEditLoading.value = true;
-  await updateTicket(ticketEdited.value).then(async () => {
+  await ticketsService.updateTicket(ticketEdited.value).then(async () => {
     await getTicketInfo();
     editTicketDialogOpen.value = false;
     dialogEditLoading.value = false;
@@ -72,7 +70,7 @@ const editTicket = async () => {
 
 const editMessage = async () => {
   dialogEditLoading.value = true;
-  await updateTicketMessage(messageEdited.value).then(async () => {
+  await ticketsService.updateTicketMessage(messageEdited.value).then(async () => {
     await getTicketMessages();
     editMessageDialogOpen.value = false;
     dialogEditLoading.value = false;
@@ -92,10 +90,12 @@ const openMessageModal = (message) => {
 };
 
 const getTicketInfo = async () =>
-  await getTicket(route.params.id).then((response) => (ticket.value = response.tickets[route.params.id]));
+  await ticketsService
+    .getTicket(route.params.id)
+    .then((response) => (ticket.value = response.tickets[route.params.id]));
 
 const getTicketMessages = async () =>
-  await fetchTicketMessages(ticket.value.id).then((response) => (messages.value = response.messages));
+  await ticketsService.fetchTicketMessages(ticket.value.id).then((response) => (messages.value = response.messages));
 
 const ticketFormIsInvalid = () =>
   !ticketEdited.value.name || !ticketEdited.value.description || !ticketEdited.value.assignee;
@@ -105,8 +105,8 @@ const messageFormIsInvalid = () => !messageEdited.value;
 const getUsername = (id) => users.value.find((user) => user.id === id).name;
 
 onBeforeMount(async () => {
-  await getTranslations().then((result) => (tr.value = result));
-  users.value = Object.values(await getUserList());
+  await translationsService.getTranslations().then((result) => (tr.value = result));
+  users.value = Object.values(await usersService.getUserList());
   await getTicketInfo();
   await getTicketMessages();
 });

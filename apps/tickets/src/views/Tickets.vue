@@ -3,9 +3,8 @@ import { formatDateAndTime } from 'libs/shared/helpers/datetimeconverter.helper.
 import { timeAgo } from 'libs/shared/helpers/timeago.helper.ts';
 import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { createTicket, fetchTickets } from '../services/tickets.service';
-import { getTranslations } from '../services/translations.service';
-import { getUserList } from '../services/users.service';
+import { userSettingsService } from '../../../../libs/shared/services';
+import { ticketsService, translationsService, usersService } from '../services';
 
 const router = useRouter();
 const tickets = ref();
@@ -24,7 +23,7 @@ const ticketCategory = ref(0);
 const ticketAssignee = ref('');
 
 const getTickets = async () => {
-  await fetchTickets().then((response) => {
+  await ticketsService.fetchTickets().then((response) => {
     tickets.value = Object.values(response.tickets).map((ticket) => {
       ticket.category = tr.value.tickets.category[ticket.category].da;
       ticket.creator = users.value.find((user) => user.id === ticket.creator).name;
@@ -57,16 +56,18 @@ const openTicketModal = () => {
 };
 
 const createNewTicket = async () => {
-  await createTicket({
-    name: ticketName.value,
-    description: ticketDescription.value,
-    priority: ticketPriority.value,
-    category: ticketCategory.value,
-    assignee: ticketAssignee.value
-  }).then(async () => {
-    await getTickets();
-    createTicketDialogOpen.value = false;
-  });
+  await ticketsService
+    .createTicket({
+      name: ticketName.value,
+      description: ticketDescription.value,
+      priority: ticketPriority.value,
+      category: ticketCategory.value,
+      assignee: ticketAssignee.value
+    })
+    .then(async () => {
+      await getTickets();
+      createTicketDialogOpen.value = false;
+    });
 };
 
 const formIsInvalid = () => !ticketName.value || !ticketDescription.value || !ticketAssignee.value;
@@ -77,8 +78,10 @@ const onRowClick = (event) => {
 };
 
 onBeforeMount(async () => {
-  tr.value = await getTranslations();
-  users.value = Object.values(await getUserList());
+  tr.value = await translationsService.getTranslations();
+  users.value = Object.values(await usersService.getUserList());
+  const userSettings = userSettingsService.get('show_my_tickets');
+  console.log('test', userSettings);
   await getTickets();
 });
 
