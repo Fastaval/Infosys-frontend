@@ -1,16 +1,19 @@
-export const mockGetTickets = (req, res, ctx) => {
-  const ticketId = req.url.searchParams.get('id');
+import { HttpResponse } from 'msw';
 
-  return res(
-    ctx.json({ status: 'success', tickets: ticketId ? { [ticketId]: mockedTickets[ticketId] } : mockedTickets })
-  );
+export const mockGetTickets = (info) => {
+  const ticketId = new URLSearchParams(new URL(info.request.url).search).get('id');
+
+  return HttpResponse.json({
+    status: 'success',
+    tickets: ticketId ? { [ticketId]: mockedTickets[ticketId] } : mockedTickets
+  });
 };
 
-export const mockPostTickets = (req, res, ctx) => {
-  if (req.body) {
-    return res(ctx.json({ status: 'success', msg: 'body had content' }));
+export const mockPostTickets = (info) => {
+  if (info.request.body) {
+    return HttpResponse.json({ status: 'success', msg: 'body had content' });
   }
-  return res(ctx.json({ status: 'success', msg: 'body had NO content' }));
+  return HttpResponse.json({ status: 'success', msg: 'body had NO content' });
 };
 
 const mockedTickets = {

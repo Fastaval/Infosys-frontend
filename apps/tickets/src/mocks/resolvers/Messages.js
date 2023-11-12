@@ -1,17 +1,17 @@
-export const mockGetTicketMessages = (req, res, ctx) => {
-  return res(
-    ctx.json({
-      status: 'success',
-      messages: mockedTicketMessages.filter((message) => message.ticket == req.params.id)
-    })
-  );
+import { HttpResponse } from 'msw';
+
+export const mockGetTicketMessages = (info) => {
+  return HttpResponse.json({
+    status: 'success',
+    messages: mockedTicketMessages.filter((message) => message.ticket == info.params.id)
+  });
 };
 
-export const mockPostTicketMessages = (req, res, ctx) => {
-  if (req.body) {
-    return res(ctx.json({ status: 'success', msg: 'body had content' }));
+export const mockPostTicketMessages = (info) => {
+  if (info.request.body) {
+    return HttpResponse.json({ status: 'success', msg: 'body had content' });
   }
-  return res(ctx.json({ status: 'success', msg: 'body had NO content' }));
+  return HttpResponse.json({ status: 'success', msg: 'body had NO content' });
 };
 
 const mockedTicketMessages = [

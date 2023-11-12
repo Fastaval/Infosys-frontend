@@ -1,5 +1,7 @@
-export const mockGetUsers = (req, res, ctx) => {
-  return res(ctx.json({ status: 'success', code: 200, users: mockedUsers }));
+import { HttpResponse } from 'msw';
+
+export const mockGetUsers = () => {
+  return HttpResponse.json({ status: 'success', code: 200, users: mockedUsers });
 };
 
 const mockedUsers = {

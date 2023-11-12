@@ -1,5 +1,7 @@
-export const mockGetTranslations = (req, res, ctx) => {
-  return res(ctx.json({ status: 'success', translations: mockedTranslations }));
+import { HttpResponse } from 'msw';
+
+export const mockGetTranslations = () => {
+  return HttpResponse.json({ status: 'success', translations: mockedTranslations });
 };
 
 const mockedTranslations = {

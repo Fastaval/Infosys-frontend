@@ -1,31 +1,18 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx-cloud",
-      "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"],
-        "accessToken": "NzFjNjI1ZDctODIzNS00YjNjLWJlMWItNDRjYjE3YWY0ZDFjfHJlYWQtd3JpdGU="
-      }
-    }
-  },
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
-    },
-    "e2e": {
-      "inputs": ["default", "^production"]
+      "inputs": ["production", "^production"],
+      "cache": true
     },
     "test": {
-      "inputs": ["default", "^production"]
+      "inputs": ["default", "^production"],
+      "cache": true
     },
     "lint": {
-      "inputs": [
-        "default",
-        "{workspaceRoot}/.eslintrc.json",
-        "{workspaceRoot}/.eslintignore"
-      ]
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.json", "{workspaceRoot}/.eslintignore"],
+      "cache": true
     }
   },
   "namedInputs": {
@@ -38,16 +25,5 @@
     ],
     "sharedGlobals": []
   },
-  "generators": {
-    "@nxext/vue": {
-      "application": {
-        "linter": "eslint"
-      },
-      "component": {},
-      "library": {
-        "linter": "eslint"
-      }
-    }
-  },
-  "plugins": ["@nxext/vue"]
+  "nxCloudAccessToken": "NzFjNjI1ZDctODIzNS00YjNjLWJlMWItNDRjYjE3YWY0ZDFjfHJlYWQtd3JpdGU="
 }
