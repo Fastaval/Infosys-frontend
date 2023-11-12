@@ -14,10 +14,11 @@ export interface UserDetails {
   id: number;
   name: string;
 }
+export const usersService = {
+  populateUsers: async () => await get('/admin/ajax/users/*').then((resp) => (users = resp.users)),
 
-export const populateUsers = async () => await get('/admin/ajax/users/*').then((resp) => (users = resp.users));
-
-export const getUserList = async () => {
-  if (users.length === 0) await populateUsers();
-  return users;
+  getUserList: async () => {
+    if (users.length === 0) await usersService.populateUsers();
+    return users;
+  }
 };

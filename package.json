@@ -4,7 +4,6 @@
   "license": "MIT",
   "dependencies": {
     "javascript-time-ago": "^2.5.9",
-    "msw": "^2.0.5",
     "primeicons": "^6.0.1",
     "primevue": "^3.40.1",
     "vue": "^3.3.8",
@@ -29,6 +28,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-vue": "^9.18.1",
     "jsdom": "^22.1.0",
+    "msw": "^2.0.5",
     "nx": "17.1.1",
     "prettier": "^3.0.3",
     "sass": "^1.64.2",
