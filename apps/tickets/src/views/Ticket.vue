@@ -1,5 +1,6 @@
 <script setup>
 import { formatDateAndTime } from 'libs/shared/helpers/datetimeconverter.helper.ts';
+import { timeAgo } from 'libs/shared/helpers/timeago.helper.ts';
 import { onBeforeMount, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { fetchTicketMessages, getTicket, updateTicket, updateTicketMessage } from '../services/tickets.service';
@@ -146,9 +147,13 @@ onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
         <div style="width: 100%; white-space: pre-wrap">{{ ticket?.description ?? 'Ingen beskrivelse' }}</div>
         <div class="ticket-details">
           <span>Oprettet:</span>
-          <span>{{ ticket.created ? formatDateAndTime(ticket.created) : 'Ukendt' }}</span>
+          <span v-tooltip.bottom="formatDateAndTime(ticket.created)">
+            {{ ticket.created ? timeAgo(ticket.created) : 'Ukendt' }}
+          </span>
           <span>Ændret:</span>
-          <span>{{ ticket.last_edit ? formatDateAndTime(ticket.last_edit) : '-' }} </span>
+          <span v-tooltip.bottom="formatDateAndTime(ticket.last_edit)">
+            {{ ticket.last_edit ? timeAgo(ticket.last_edit) : '-' }}
+          </span>
           <span>Prioritet:</span>
           <span>{{ tr?.tickets?.priority[ticket.priority].da ?? 'Ukendt' }}</span>
           <span>Oprettet af:</span>
@@ -162,7 +167,14 @@ onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
   <Timeline :value="messages" style="padding-top: 1rem">
     <template #opposite="prop">
       <small class="p-text-secondary">
-        {{ getUsername(prop.item.user) }} | {{ formatDateAndTime(prop.item.posted) }}
+        {{ getUsername(prop.item.user) }} |
+        <span
+          v-tooltip.top="
+            prop.item.last_edit ? formatDateAndTime(prop.item.last_edit) : formatDateAndTime(prop.item.posted)
+          "
+        >
+          {{ prop.item.last_edit ? `${timeAgo(prop.item.last_edit)} (rettet)` : timeAgo(prop.item.posted) }}</span
+        >
       </small>
     </template>
     <template #marker="prop">
