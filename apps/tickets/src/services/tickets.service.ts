@@ -1,17 +1,19 @@
 import { MessageDetails, TicketDetails } from '../models/tickets.model';
 import { get, post } from './api.service';
 
-// Tickets
-export const fetchTickets = async () => await get('/tickets/ajax');
-export const createTicket = async (ticketDetails: Partial<TicketDetails>) => await post('/tickets/ajax', ticketDetails);
-export const updateTicket = async (ticketDetails: TicketDetails) => await post('/tickets/ajax', ticketDetails);
+export const ticketsService = {
+  // Tickets
+  fetchTickets: async () => await get('/tickets/ajax'),
+  createTicket: async (ticketDetails: Partial<TicketDetails>) => await post('/tickets/ajax', ticketDetails),
+  updateTicket: async (ticketDetails: TicketDetails) => await post('/tickets/ajax', ticketDetails),
 
-// Singular Ticket
-export const getTicket = async (ticketId: string) => await get(`/tickets/ajax?id=${ticketId}`);
+  // Singular Ticket
+  getTicket: async (ticketId: string) => await get(`/tickets/ajax?id=${ticketId}`),
 
-// Ticket Messages
-export const fetchTicketMessages = async (ticketId: string) => await get(`/tickets/${ticketId}/messages`);
-export const createTicketMessage = async (messageDetails: Partial<MessageDetails>) =>
-  await post(`/tickets/${messageDetails.ticket}/messages`, messageDetails);
-export const updateTicketMessage = async (messageDetails: Partial<MessageDetails>) =>
-  await post(`/tickets/${messageDetails.ticket}/messages`, messageDetails);
+  // Ticket Messages
+  fetchTicketMessages: async (ticketId: string) => await get(`/tickets/${ticketId}/messages`),
+  createTicketMessage: async (messageDetails: Partial<MessageDetails>) =>
+    await post(`/tickets/${messageDetails.ticket}/messages`, messageDetails),
+  updateTicketMessage: async (messageDetails: Partial<MessageDetails>) =>
+    await post(`/tickets/${messageDetails.ticket}/messages`, messageDetails)
+};

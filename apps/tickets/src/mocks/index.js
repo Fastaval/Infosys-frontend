@@ -1,6 +1,6 @@
 import { http } from 'msw';
 import { setupWorker } from 'msw/browser';
-import { mockGetTicketMessages, mockPostTicketMessages } from './resolvers/Messages';
+import { mockGetTicketMessages, mockPostTicketMessages } from './resolvers/messages';
 import { mockGetTickets, mockPostTickets } from './resolvers/tickets';
 import { mockGetTranslations } from './resolvers/translations';
 import { mockGetUsers } from './resolvers/users';
