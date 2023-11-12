@@ -1,7 +1,7 @@
 <script setup>
 import { formatDateAndTime } from 'libs/shared/helpers/datetimeconverter.helper.ts';
 import { timeAgo } from 'libs/shared/helpers/timeago.helper.ts';
-import { onBeforeMount, onUpdated, ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { userSettingsService } from '../../../../libs/shared/services';
 import { ticketsService, translationsService, usersService } from '../services';
@@ -13,8 +13,9 @@ const users = ref();
 const loggedInUser = ref();
 const tr = ref();
 const createTicketDialogOpen = ref(false);
-const onlyShowOpen = ref(true);
-const onlyShowMine = ref(false);
+const onlyShowOpen = ref(userSettingsService.getBoolean('tickets_show_open_tickets') ?? true);
+const onlyShowMine = ref(userSettingsService.getBoolean('tickets_show_my_tickets') ?? false);
+const rowsPerPage = ref(userSettingsService.getNumber('tickets_page_per_rows') ?? 10);
 const searchFilter = ref('');
 const ticketName = ref('');
 const ticketDescription = ref('');
@@ -39,7 +40,7 @@ const getTickets = async () => {
 };
 
 const filterTickets = () =>
-  (filteredTickets.value = tickets.value.filter(
+  (filteredTickets.value = tickets.value?.filter(
     (ticket) => ticketNameIncludes(ticket) && ticketStatusOpen(ticket) && ticketOnlyMine(ticket)
   ));
 
@@ -53,6 +54,20 @@ const openTicketModal = () => {
   ticketName.value = '';
   ticketDescription.value = '';
   createTicketDialogOpen.value = true;
+};
+
+const handleOnlyShowOpenChange = () => {
+  userSettingsService.set('tickets_show_open_tickets', onlyShowOpen.value);
+  filterTickets();
+};
+
+const handleOnlyShowMineChange = () => {
+  userSettingsService.set('tickets_show_my_tickets', onlyShowMine.value);
+  filterTickets();
+};
+
+const handleRowsPerPageChange = (event) => {
+  userSettingsService.set('tickets_page_per_rows', event.rows);
 };
 
 const createNewTicket = async () => {
@@ -80,13 +95,8 @@ const onRowClick = (event) => {
 onBeforeMount(async () => {
   tr.value = await translationsService.getTranslations();
   users.value = Object.values(await usersService.getUserList());
-  const userSettings = userSettingsService.get('show_my_tickets');
-  console.log('test', userSettings);
-  await getTickets();
-});
-
-onUpdated(async () => {
   loggedInUser.value = users.value.find((user) => user.id === window?.infosys?.user_id)?.name;
+  await getTickets();
 });
 </script>
 
@@ -98,11 +108,11 @@ onUpdated(async () => {
     <template #start>
       <div style="display: inline-flex; gap: 1rem">
         <div style="display: inline-flex; gap: 0.5rem">
-          <InputSwitch inputId="showOnlyOpen" v-model="onlyShowOpen" @change="filterTickets()" />
+          <InputSwitch inputId="showOnlyOpen" v-model="onlyShowOpen" @change="handleOnlyShowOpenChange()" />
           <label for="showOnlyOpen">Åbne opgaver</label>
         </div>
         <div style="display: inline-flex; gap: 0.5rem">
-          <InputSwitch inputId="showOnlyMine" v-model="onlyShowMine" @change="filterTickets()" />
+          <InputSwitch inputId="showOnlyMine" v-model="onlyShowMine" @change="handleOnlyShowMineChange()" />
           <label for="showOnlyMine">Mine opgaver</label>
         </div>
       </div>
@@ -121,16 +131,16 @@ onUpdated(async () => {
   </Toolbar>
 
   <DataTable
-    v-if="filteredTickets"
+    @page="handleRowsPerPageChange($event)"
     @row-click="onRowClick"
     :value="filteredTickets"
-    :rows="10"
+    :rows="rowsPerPage"
     :rowHover="true"
     :sortOrder="-1"
     :rowsPerPageOptions="[5, 10, 20, 50, 100]"
     size="small"
     sort-field="last_edit"
-    paginatorTemplate=" FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+    paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
     currentPageReportTemplate="{first}-{last} ud af {totalRecords}"
     paginator
     stripedRows

@@ -111,7 +111,7 @@ onBeforeMount(async () => {
   await getTicketMessages();
 });
 
-onUpdated(async () => (loggedInUser.value = window?.infosys?.user_id));
+onUpdated(() => (loggedInUser.value = window?.infosys?.user_id));
 </script>
 
 <template>
