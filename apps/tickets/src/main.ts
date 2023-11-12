@@ -23,10 +23,14 @@ import './styles.scss';
 
 if (import.meta.env.DEV) {
   const { worker } = await import('./mocks/index');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).infosys = { user_id: 241 }; // to simulate what properties are available on Infosys
-  worker.start({
+
+  await worker.start({
     onUnhandledRequest(req) {
-      console.info(`Unhandled ${req.method} request to ${req.url.href} `);
+      if (req.url.includes('http://localhost:4200')) return;
+
+      console.info(`Unhandled ${req.method} request to ${req.url} `);
     }
   });
 }
